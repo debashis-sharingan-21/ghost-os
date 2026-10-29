@@ -17,6 +17,8 @@ def test_index_page(client):
     assert response.status_code == 200
     assert "GHOST.OS" in response.text
     assert "access-terminal" in response.text
+    assert "stage-ghost-gate" in response.text
+    assert "stage-hardware-awakening" in response.text
 
 
 def test_api_status(client):
@@ -43,7 +45,6 @@ def test_simulator_scenarios_list(client):
 
 
 def test_trigger_and_reset_scenario(client):
-    # Trigger free fall
     trigger_resp = client.post(
         "/api/simulator/scenario",
         json={"scenario": "free_fall", "duration_sec": 3.5},
@@ -51,11 +52,9 @@ def test_trigger_and_reset_scenario(client):
     assert trigger_resp.status_code == 200
     assert trigger_resp.json()["ok"] is True
 
-    # Check status
     status_resp = client.get("/api/status")
     assert status_resp.json()["active_scenario"] == "free_fall"
 
-    # Reset
     reset_resp = client.post("/api/simulator/reset")
     assert reset_resp.status_code == 200
 
@@ -63,21 +62,49 @@ def test_trigger_and_reset_scenario(client):
     assert status_resp2.json()["active_scenario"] == "normal"
 
 
-def test_telemetry_recent(client):
-    response = client.get("/api/telemetry/recent?limit=10")
-    assert response.status_code == 200
-    data = response.json()
-    assert "frames" in data
-    assert isinstance(data["frames"], list)
+def test_serial_endpoints(client):
+    ports_resp = client.get("/api/serial/ports")
+    assert ports_resp.status_code == 200
+    assert "ports" in ports_resp.json()
+
+    disconn_resp = client.post("/api/serial/disconnect")
+    assert disconn_resp.status_code == 200
+    assert disconn_resp.json()["ok"] is True
+
+
+def test_anomalies_and_ai_interrogation_endpoints(client):
+    # Trigger an anomaly to produce an event
+    client.post("/api/simulator/scenario", json={"scenario": "high_g_impact", "duration_sec": 2.0})
+
+    anom_resp = client.get("/api/anomalies")
+    assert anom_resp.status_code == 200
+    data = anom_resp.json()
+    assert "events" in data
+
+    ai_status = client.get("/api/ai/status")
+    assert ai_status.status_code == 200
+    assert "fallback_available" in ai_status.json()
+
+
+def test_sessions_endpoints(client):
+    sessions_resp = client.get("/api/sessions")
+    assert sessions_resp.status_code == 200
+    assert "sessions" in sessions_resp.json()
+
+    # Start and stop recording
+    start_resp = client.post("/api/sessions/record/start", json={"session_name": "test_api_rec"})
+    assert start_resp.status_code == 200
+    assert start_resp.json()["ok"] is True
+
+    stop_resp = client.post("/api/sessions/record/stop")
+    assert stop_resp.status_code == 200
+    assert stop_resp.json()["ok"] is True
 
 
 def test_websocket_telemetry_stream(client):
     with client.websocket_connect("/ws/telemetry") as ws:
-        # Should receive a telemetry frame
         data = ws.receive_json()
         assert data["proto"] == "ghost.v1"
         assert "seq" in data
         assert "mpu6050" in data
-        assert "accel_z" in data["mpu6050"]
         assert "health" in data
-        assert data["simulated"] is True

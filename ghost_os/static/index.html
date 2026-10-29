@@ -10,7 +10,74 @@
   <!-- CRT Scanline & Vignette Effect -->
   <div class="crt-overlay"></div>
 
-  <div class="terminal-shell">
+  <!-- STAGE 1: GHOST GATE (CINEMATIC OPENING) -->
+  <div id="stage-ghost-gate" class="stage-overlay">
+    <div class="ghost-gate-container">
+      <!-- Original Phosphor Green Cyber-Matrix Ghost Skull -->
+      <svg class="ghost-skull-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer cranial glow shield -->
+        <path d="M40 75 C40 30, 160 30, 160 75 C160 110, 145 130, 135 145 L135 165 C135 170, 125 175, 100 175 C75 175, 65 170, 65 165 L65 145 C55 130, 40 110, 40 75 Z" 
+              stroke="#00ff66" stroke-width="3" fill="#041204" />
+        <!-- Cranial suture lines -->
+        <path d="M100 30 L100 70 M75 40 L100 55 L125 40" stroke="#00993d" stroke-width="1.5" />
+        <!-- Brow ridge -->
+        <path d="M55 78 C70 70, 90 75, 100 78 C110 75, 130 70, 145 78" stroke="#00ff66" stroke-width="2.5" />
+        <!-- Eye Sockets with Blinking Phosphor Pupils -->
+        <ellipse cx="72" cy="95" rx="18" ry="14" fill="#020802" stroke="#00ff66" stroke-width="2" />
+        <ellipse cx="128" cy="95" rx="18" ry="14" fill="#020802" stroke="#00ff66" stroke-width="2" />
+        <circle id="ghost-eye-left" class="ghost-eye" cx="72" cy="95" r="5" fill="#00ff66" filter="drop-shadow(0 0 6px #00ff66)" />
+        <circle id="ghost-eye-right" class="ghost-eye" cx="128" cy="95" r="5" fill="#00ff66" filter="drop-shadow(0 0 6px #00ff66)" />
+        <!-- Nasal cavity -->
+        <path d="M100 110 L94 125 L106 125 Z" fill="#00ff66" />
+        <!-- Jaw & Teeth Matrix -->
+        <path d="M72 145 L128 145 M72 155 L128 155" stroke="#00ff66" stroke-width="2" />
+        <path d="M80 145 L80 165 M93 145 L93 165 M107 145 L107 165 M120 145 L120 165" stroke="#00993d" stroke-width="1.5" />
+      </svg>
+
+      <div class="gate-title">GHOST.OS</div>
+      <div class="gate-signal-box">
+        <span>UNKNOWN SIGNAL DETECTED</span><span class="cursor-blink">_</span>
+      </div>
+
+      <div id="btn-awaken" class="gate-awaken-prompt" tabindex="0" role="button">
+        &gt;&gt; PRESS ANY KEY OR CLICK TO AWAKEN &lt;&lt;
+      </div>
+
+      <div class="gate-controls">
+        <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <input type="checkbox" id="chk-skip-intro">
+          <span>SKIP INTRO IN FUTURE SESSIONS</span>
+        </label>
+        <span>[PRESS ESC TO SKIP]</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 2: HARDWARE AWAKENING (WIREFRAME & BOOT LOG) -->
+  <div id="stage-hardware-awakening" class="stage-overlay stage-hidden">
+    <div class="awakening-container">
+      <div class="panel-header" style="width: 100%;">
+        <span>SILICON SCHEMATIC TRACE // ESP32-WROOM-32</span>
+        <span id="awakening-progress-label">INITIALIZING [0%]</span>
+      </div>
+
+      <!-- Progressive ESP32 Wireframe Canvas -->
+      <div class="esp32-wireframe-box">
+        <canvas id="esp32-wireframe-canvas" class="esp32-canvas"></canvas>
+      </div>
+
+      <!-- Live Boot Log with Real Hardware Audit -->
+      <div id="awakening-log" class="awakening-log"></div>
+
+      <div class="awakening-prompt-bar">
+        <span id="hardware-status-summary">PROBING CARRIER...</span>
+        <button id="btn-skip-awakening" class="btn btn-amber" style="padding: 4px 10px;">SKIP TO COMMAND CENTER &gt;&gt;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 3: COMMAND CENTER (MAIN DASHBOARD) -->
+  <div id="stage-command-center" class="terminal-shell">
     <!-- ACCESS TERMINAL / HEADER -->
     <header class="access-terminal">
       <div class="brand-section">
@@ -22,26 +89,32 @@
         <span id="badge-alert" class="badge badge-status-online">NOMINAL</span>
         <span id="stat-rate" class="badge" style="border-color: #557755; color: #88aa88;">10.0 HZ</span>
         <span class="badge" style="border-color: #335533; color: #55aa55;">FRAME #<span id="stat-seq">0</span></span>
+        <button id="btn-lock-terminal" class="btn btn-amber" style="padding: 4px 8px; font-size: 10px;">LOCK / GATE</button>
       </div>
     </header>
 
-    <!-- MAIN DASHBOARD GRID -->
+    <!-- NAVIGATION TABS -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('tab-live')">LIVE SIGNALS</button>
+      <button class="tab-btn" onclick="switchTab('tab-trace')">GHOST TRACE FORENSICS</button>
+      <button class="tab-btn" onclick="switchTab('tab-ai')">AI INTERROGATION</button>
+      <button class="tab-btn" onclick="switchTab('tab-replay')">DIGITAL AFTERLIFE REPLAY</button>
+    </nav>
+
+    <!-- MAIN DASHBOARD CONTENT -->
     <main class="dashboard-grid">
       <!-- LEFT PANEL: DEVICE LINK & HARDWARE HEALTH -->
       <section class="panel">
         <div class="panel-header">
           <span>DEVICE LINK</span>
-          <div class="indicator"></div>
+          <div id="indicator-link" class="indicator"></div>
         </div>
 
         <div class="link-controls">
           <div class="field-group">
-            <label for="serial-port-select">INTERFACE / PORT</label>
+            <label for="serial-port-select">INTERFACE / COM PORT</label>
             <select id="serial-port-select" class="input-select">
               <option value="sim">VIRTUAL SIMULATOR (10 Hz)</option>
-              <option value="COM1">COM1 (Hardware)</option>
-              <option value="COM3">COM3 (ESP32-WROOM)</option>
-              <option value="COM4">COM4 (Silicon Labs CP210x)</option>
             </select>
           </div>
 
@@ -54,7 +127,10 @@
             </select>
           </div>
 
-          <button id="btn-toggle-link" class="btn" style="margin-top: 4px;">LINK DISENGAGED (SIM ACTIVE)</button>
+          <div style="display: flex; gap: 6px;">
+            <button id="btn-toggle-link" class="btn" style="flex: 1;" onclick="toggleSerialConnection()">CONNECT SERIAL</button>
+            <button class="btn btn-cyan" onclick="refreshSerialPorts()" title="Scan for COM Ports">SCAN</button>
+          </div>
         </div>
 
         <div class="panel-header" style="margin-top: 10px;">
@@ -82,46 +158,105 @@
         </div>
 
         <div class="panel-header" style="margin-top: 10px;">
-          <span>SENSOR STATUS</span>
-          <div class="indicator"></div>
+          <span>SESSION RECORDER</span>
+          <div class="indicator" id="indicator-recording" style="background: var(--text-dim);"></div>
         </div>
-        <div class="stat-card">
-          <span class="label">MPU6050 6-DOF STATE</span>
-          <span class="val" id="stat-sensor-status" style="font-size: 14px;">OK</span>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button id="btn-record" class="btn btn-red" style="flex: 1;" onclick="toggleRecording()">REC SESSION</button>
+          <span id="record-status-label" style="font-size: 10px; color: var(--text-dim);">IDLE</span>
         </div>
       </section>
 
-      <!-- CENTER PANEL: LIVE SIGNALS & CHARTS -->
+      <!-- CENTER PANEL: DYNAMIC TABS -->
       <section class="panel live-signals">
-        <div class="panel-header">
-          <span>LIVE SIGNALS // MPU6050 3-AXIS ACCELEROMETER</span>
-          <div class="indicator"></div>
+        <!-- TAB 1: LIVE SIGNALS & CHARTS -->
+        <div id="view-tab-live">
+          <div class="panel-header">
+            <span>LIVE SIGNALS // MPU6050 3-AXIS ACCELEROMETER</span>
+            <div class="indicator"></div>
+          </div>
+          <div class="chart-container">
+            <canvas id="accel-canvas"></canvas>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background: #ff3366;"></div><span>Ax: <b id="stat-ax">0.00</b> m/s²</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background: #00ff66;"></div><span>Ay: <b id="stat-ay">0.00</b> m/s²</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background: #00ccff;"></div><span>Az: <b id="stat-az">9.81</b> m/s²</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background: #ffcc00;"></div><span>|A|: <b id="stat-amag">9.81</b> m/s²</span></div>
+          </div>
+
+          <div class="panel-header" style="margin-top: 6px;">
+            <span>LIVE SIGNALS // MPU6050 3-AXIS GYROSCOPE</span>
+            <div class="indicator"></div>
+          </div>
+          <div class="chart-container">
+            <canvas id="gyro-canvas"></canvas>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background: #ff6600;"></div><span>Gx: <b id="stat-gx">0.0</b> °/s</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background: #ff00ff;"></div><span>Gy: <b id="stat-gy">0.0</b> °/s</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background: #33ffff;"></div><span>Gz: <b id="stat-gz">0.0</b> °/s</span></div>
+          </div>
         </div>
 
-        <!-- Accelerometer Chart -->
-        <div class="chart-container">
-          <canvas id="accel-canvas"></canvas>
-        </div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background: #ff3366;"></div><span>Ax: <b id="stat-ax">0.00</b> m/s²</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background: #00ff66;"></div><span>Ay: <b id="stat-ay">0.00</b> m/s²</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background: #00ccff;"></div><span>Az: <b id="stat-az">9.81</b> m/s²</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background: #ffcc00;"></div><span>|A|: <b id="stat-amag">9.81</b> m/s²</span></div>
+        <!-- TAB 2: GHOST TRACE FORENSICS -->
+        <div id="view-tab-trace" style="display: none; flex-direction: column; gap: 10px;">
+          <div class="panel-header">
+            <span>GHOST TRACE // PRE-ANOMALY RECONSTRUCTION</span>
+            <div class="indicator" style="background: var(--amber-warning);"></div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-dim);">
+            Select an anomaly event to inspect its rolling evidence window and physics trajectory:
+          </div>
+          <div id="trace-events-list" class="event-list-container">
+            <div style="color: var(--text-muted); padding: 8px;">No anomaly events recorded yet. Trigger a scenario from the matrix to generate evidence.</div>
+          </div>
+          <div id="trace-detail-view" style="display: none; background: #010301; padding: 10px; border: 1px solid var(--phosphor-green-dim); border-radius: 4px;">
+            <div style="font-weight: bold; color: var(--phosphor-green); margin-bottom: 6px;" id="trace-detail-title">EVENT FORENSIC EVIDENCE</div>
+            <div id="trace-detail-stats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 11px; margin-bottom: 8px;"></div>
+            <button class="btn btn-cyan" onclick="interrogateSelectedEvent()">SUBMIT TO AI INTERROGATOR &gt;&gt;</button>
+          </div>
         </div>
 
-        <div class="panel-header" style="margin-top: 6px;">
-          <span>LIVE SIGNALS // MPU6050 3-AXIS GYROSCOPE</span>
-          <div class="indicator"></div>
+        <!-- TAB 3: AI INTERROGATION -->
+        <div id="view-tab-ai" style="display: none; flex-direction: column; gap: 10px;">
+          <div class="panel-header">
+            <span>AI FORENSIC INTERROGATION ENGINE</span>
+            <div class="indicator" style="background: var(--cyan-accent); box-shadow: 0 0 6px var(--cyan-accent);"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--cyan-accent);">
+            <span>RUNTIME: <b id="ai-active-mode">Ollama / Fallback Reasoner</b></span>
+            <button class="btn btn-cyan" style="padding: 3px 8px; font-size: 10px;" onclick="refreshAiStatus()">REFRESH AI</button>
+          </div>
+          <div id="ai-result-container" class="ai-diagnosis-card">
+            <div style="color: var(--text-muted); font-size: 11px;">
+              No active interrogation report. Select an event in Ghost Trace or trigger an anomaly scenario.
+            </div>
+          </div>
         </div>
 
-        <!-- Gyroscope Chart -->
-        <div class="chart-container">
-          <canvas id="gyro-canvas"></canvas>
-        </div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background: #ff6600;"></div><span>Gx (Roll): <b id="stat-gx">0.0</b> °/s</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background: #ff00ff;"></div><span>Gy (Pitch): <b id="stat-gy">0.0</b> °/s</span></div>
-          <div class="legend-item"><div class="legend-dot" style="background: #33ffff;"></div><span>Gz (Yaw): <b id="stat-gz">0.0</b> °/s</span></div>
+        <!-- TAB 4: DIGITAL AFTERLIFE REPLAY -->
+        <div id="view-tab-replay" style="display: none; flex-direction: column; gap: 10px;">
+          <div class="panel-header">
+            <span>DIGITAL AFTERLIFE // TELEMETRY SESSION REPLAY</span>
+            <div class="indicator"></div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <select id="replay-session-select" class="input-select" style="flex: 1;"></select>
+            <button class="btn btn-cyan" onclick="loadReplaySession()">LOAD</button>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn" style="flex: 1;" onclick="playReplay()">PLAY</button>
+            <button class="btn btn-amber" style="flex: 1;" onclick="pauseReplay()">PAUSE</button>
+            <button class="btn" onclick="stepReplay()">STEP</button>
+            <select id="replay-speed-select" class="input-select" onchange="changeReplaySpeed(this.value)">
+              <option value="0.5">0.5x</option>
+              <option value="1.0" selected>1.0x</option>
+              <option value="2.0">2.0x</option>
+              <option value="4.0">4.0x</option>
+            </select>
+          </div>
+          <div style="font-size: 11px; color: var(--text-dim);" id="replay-progress-text">Playback: Idle</div>
         </div>
       </section>
 
@@ -139,11 +274,11 @@
           </button>
           <button class="btn scenario-btn" onclick="triggerScenario('high_g_impact', 3.0)">
             <span>KINETIC IMPACT</span>
-            <span class="tag btn-red">>40G</span>
+            <span class="tag btn-red">&gt;40G</span>
           </button>
           <button class="btn scenario-btn" onclick="triggerScenario('tumble_spin', 4.0)">
             <span>TUMBLE RUNAWAY</span>
-            <span class="tag btn-amber">>500°/s</span>
+            <span class="tag btn-amber">&gt;500°/s</span>
           </button>
           <button class="btn scenario-btn" onclick="triggerScenario('sensor_freeze', 4.0)">
             <span>I2C SENSOR FREEZE</span>
@@ -151,7 +286,7 @@
           </button>
           <button class="btn scenario-btn" onclick="triggerScenario('thermal_spike', 5.0)">
             <span>THERMAL RUNAWAY</span>
-            <span class="tag btn-amber">>65°C</span>
+            <span class="tag btn-amber">&gt;65°C</span>
           </button>
           <button class="btn scenario-btn" onclick="triggerScenario('brownout', 4.0)">
             <span>SUPPLY BROWNOUT</span>
