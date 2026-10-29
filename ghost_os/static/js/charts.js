@@ -1,6 +1,7 @@
 /**
  * GHOST.OS — Real-Time Multi-Trace Oscilloscope Canvas Engine
- * Completely offline, zero external dependencies.
+ * Premium retro-cyber visual rendering with phosphor glow, dynamic auto-scale,
+ * in-canvas HUD readouts, and zero external dependencies.
  */
 
 class GhostOscilloscope {
@@ -11,18 +12,22 @@ class GhostOscilloscope {
       return;
     }
     this.ctx = this.canvas.getContext('2d');
-    this.maxPoints = options.maxPoints || 120;
-    this.minValue = options.minValue ?? -20;
-    this.maxValue = options.maxValue ?? 20;
-    this.autoscale = options.autoscale ?? false;
+    this.maxPoints = options.maxPoints || 140;
+    this.minValue = options.minValue ?? -25;
+    this.maxValue = options.maxValue ?? 25;
+    this.currentMin = this.minValue;
+    this.currentMax = this.maxValue;
+    this.autoscale = options.autoscale ?? true;
     this.unit = options.unit || '';
+    this.title = options.title || '';
     this.traces = options.traces || [
-      { key: 'x', color: '#ff3366', label: 'X' },
-      { key: 'y', color: '#00ff66', label: 'Y' },
-      { key: 'z', color: '#00ccff', label: 'Z' },
+      { key: 'ax', color: '#ff3366', label: 'Ax' },
+      { key: 'ay', color: '#00ff66', label: 'Ay' },
+      { key: 'az', color: '#00ccff', label: 'Az' },
     ];
 
     this.history = []; // Array of { [key]: value }
+    this.lastValues = {};
 
     this.resize();
     window.addEventListener('resize', () => this.resize());
@@ -31,13 +36,19 @@ class GhostOscilloscope {
   resize() {
     if (!this.canvas) return;
     const rect = this.canvas.getBoundingClientRect();
-    this.canvas.width = Math.floor(rect.width * window.devicePixelRatio || 1);
-    this.canvas.height = Math.floor(rect.height * window.devicePixelRatio || 1);
+    const w = rect.width > 20 ? rect.width : 540;
+    const h = rect.height > 20 ? rect.height : 220;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    this.canvas.width = Math.floor(w * dpr);
+    this.canvas.height = Math.floor(h * dpr);
+    this.dpr = dpr;
     this.render();
   }
 
   pushPoint(pointObj) {
     this.history.push(pointObj);
+    this.lastValues = pointObj;
     if (this.history.length > this.maxPoints) {
       this.history.shift();
     }
@@ -49,15 +60,16 @@ class GhostOscilloscope {
     const ctx = this.ctx;
     const w = this.canvas.width;
     const h = this.canvas.height;
+    const dpr = this.dpr || 1;
 
     // Clear background
-    ctx.fillStyle = '#020402';
+    ctx.fillStyle = '#020502';
     ctx.fillRect(0, 0, w, h);
 
-    // Grid lines (subtle dark green phosphor grid)
-    ctx.strokeStyle = '#0a1a0a';
-    ctx.lineWidth = 1;
-    const gridCols = 10;
+    // Grid lines (subtle dark green phosphor matrix)
+    ctx.strokeStyle = '#071609';
+    ctx.lineWidth = 1 * dpr;
+    const gridCols = 12;
     const gridRows = 6;
 
     for (let c = 1; c < gridCols; c++) {
@@ -76,36 +88,34 @@ class GhostOscilloscope {
       ctx.stroke();
     }
 
-    // Zero-axis line
-    const zeroY = this.valToY(0, h);
-    ctx.strokeStyle = '#183818';
-    ctx.beginPath();
-    ctx.moveTo(0, zeroY);
-    ctx.lineTo(w, zeroY);
-    ctx.stroke();
-
-    // Scale bounds
-    let minV = this.minValue;
-    let maxV = this.maxValue;
-
+    // Dynamic auto-scale calculations
     if (this.autoscale && this.history.length > 2) {
       let localMin = Infinity;
       let localMax = -Infinity;
       for (const p of this.history) {
         for (const tr of this.traces) {
           const v = p[tr.key];
-          if (typeof v === 'number') {
+          if (typeof v === 'number' && !isNaN(v)) {
             if (v < localMin) localMin = v;
             if (v > localMax) localMax = v;
           }
         }
       }
       if (localMin !== Infinity && localMax !== -Infinity) {
-        const span = Math.max(0.5, localMax - localMin);
-        minV = localMin - span * 0.15;
-        maxV = localMax + span * 0.15;
+        const span = Math.max(2.0, localMax - localMin);
+        const targetMin = localMin - span * 0.15;
+        const targetMax = localMax + span * 0.15;
+        // Smooth damping
+        this.currentMin += (targetMin - this.currentMin) * 0.1;
+        this.currentMax += (targetMax - this.currentMax) * 0.1;
       }
+    } else {
+      this.currentMin = this.minValue;
+      this.currentMax = this.maxValue;
     }
+
+    const minV = this.currentMin;
+    const maxV = this.currentMax;
 
     const valToY = (val) => {
       const clamped = Math.max(minV, Math.min(maxV, val));
@@ -113,16 +123,26 @@ class GhostOscilloscope {
       return h - norm * h;
     };
 
-    // Draw traces
+    // Zero-axis reference line
+    const zeroY = valToY(0);
+    ctx.strokeStyle = 'rgba(0, 255, 102, 0.25)';
+    ctx.setLineDash([4 * dpr, 4 * dpr]);
+    ctx.beginPath();
+    ctx.moveTo(0, zeroY);
+    ctx.lineTo(w, zeroY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw Multi-Trace lines with glow
     const stepX = w / (this.maxPoints - 1);
 
     for (const trace of this.traces) {
       if (this.history.length < 2) continue;
 
       ctx.strokeStyle = trace.color;
-      ctx.lineWidth = 1.8 * (window.devicePixelRatio || 1);
+      ctx.lineWidth = 1.8 * dpr;
       ctx.shadowColor = trace.color;
-      ctx.shadowBlur = 6;
+      ctx.shadowBlur = 8 * dpr;
       ctx.beginPath();
 
       const startIdx = this.maxPoints - this.history.length;
@@ -137,18 +157,29 @@ class GhostOscilloscope {
         }
       }
       ctx.stroke();
-      ctx.shadowBlur = 0; // Reset shadow
+      ctx.shadowBlur = 0; // Reset shadow for performance
     }
 
-    // Min / Max legend text
-    ctx.fillStyle = '#446644';
-    ctx.font = `${10 * (window.devicePixelRatio || 1)}px monospace`;
-    ctx.fillText(`${maxV.toFixed(1)}${this.unit}`, 6, 14 * (window.devicePixelRatio || 1));
-    ctx.fillText(`${minV.toFixed(1)}${this.unit}`, 6, h - 4);
-  }
+    // Top and Bottom Scale Labels
+    ctx.fillStyle = '#447744';
+    ctx.font = `${10 * dpr}px monospace`;
+    ctx.fillText(`${maxV.toFixed(1)}${this.unit}`, 8 * dpr, 14 * dpr);
+    ctx.fillText(`${minV.toFixed(1)}${this.unit}`, 8 * dpr, h - 6 * dpr);
 
-  valToY(val, h) {
-    const norm = (val - this.minValue) / (this.maxValue - this.minValue || 1);
-    return h - norm * h;
+    // In-canvas HUD readout in top-right corner
+    let hudX = w - 12 * dpr;
+    const hudY = 14 * dpr;
+    ctx.textAlign = 'right';
+
+    let hudText = '';
+    for (const tr of this.traces) {
+      const val = this.lastValues[tr.key];
+      const valStr = (typeof val === 'number') ? val.toFixed(1) : '--';
+      ctx.fillStyle = tr.color;
+      hudText = `${tr.label}: ${valStr}`;
+      ctx.fillText(hudText, hudX, hudY);
+      hudX -= (ctx.measureText(hudText).width + 12 * dpr);
+    }
+    ctx.textAlign = 'left';
   }
 }

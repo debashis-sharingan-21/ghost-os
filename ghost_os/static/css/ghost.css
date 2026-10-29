@@ -109,30 +109,26 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  gap: 16px;
   text-align: center;
-  max-width: 600px;
+  max-width: 650px;
+  width: 100%;
 }
 
-.ghost-skull-svg {
-  width: 220px;
-  height: 220px;
-  filter: drop-shadow(0 0 14px var(--phosphor-green));
-  animation: float-skull 3s ease-in-out infinite alternate;
+.gate-3d-box {
+  width: 100%;
+  height: 360px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  filter: drop-shadow(0 0 20px rgba(0, 255, 102, 0.35));
 }
 
-@keyframes float-skull {
-  0% { transform: translateY(0px) scale(1.0); }
-  100% { transform: translateY(-8px) scale(1.02); }
-}
-
-.ghost-eye {
-  animation: eye-blink 4s infinite;
-}
-
-@keyframes eye-blink {
-  0%, 94%, 98%, 100% { transform: scaleY(1); opacity: 1; }
-  96% { transform: scaleY(0.1); opacity: 0.3; }
+.gate-3d-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
 }
 
 .gate-title {
@@ -201,17 +197,19 @@ body {
 
 .esp32-wireframe-box {
   width: 100%;
-  height: 230px;
+  height: 280px;
   background: #010401;
   border: 1px solid var(--phosphor-green-dim);
   border-radius: 4px;
   position: relative;
   overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0, 20, 0, 0.8), 0 0 12px rgba(0, 255, 102, 0.15);
 }
 
-.esp32-canvas {
-  width: 100%;
-  height: 100%;
+.esp32-wireframe-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
 }
 
 .awakening-log {

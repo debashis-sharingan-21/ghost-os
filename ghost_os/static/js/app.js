@@ -1,5 +1,5 @@
 /**
- * GHOST.OS — Main Application Orchestrator & Cinematic Opening Engine
+ * GHOST.OS — Main Application Orchestrator & 3D Cinematic Experience Engine
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,17 +15,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const awakeningLog = document.getElementById('awakening-log');
   const awakeningProgressLabel = document.getElementById('awakening-progress-label');
   const hwStatusSummary = document.getElementById('hardware-status-summary');
-  const esp32Canvas = document.getElementById('esp32-wireframe-canvas');
 
   // Terminal & Charts
   const terminal = new GhostTerminal('terminal-console', 120);
 
   const accelChart = new GhostOscilloscope('accel-canvas', {
-    maxPoints: 120,
+    maxPoints: 140,
     minValue: -25,
     maxValue: 25,
     autoscale: true,
     unit: ' m/s²',
+    title: 'ACCELEROMETER',
     traces: [
       { key: 'ax', color: '#ff3366', label: 'Ax' },
       { key: 'ay', color: '#00ff66', label: 'Ay' },
@@ -35,11 +35,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const gyroChart = new GhostOscilloscope('gyro-canvas', {
-    maxPoints: 120,
+    maxPoints: 140,
     minValue: -300,
     maxValue: 300,
     autoscale: true,
     unit: ' °/s',
+    title: 'GYROSCOPE',
     traces: [
       { key: 'gx', color: '#ff6600', label: 'Gx (Roll)' },
       { key: 'gy', color: '#ff00ff', label: 'Gy (Pitch)' },
@@ -80,16 +81,43 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1000);
 
   // ========================================================
-  // STAGE TRANSITIONS & CINEMATIC STARTUP FLOW
+  // 3D STAGE INITIALIZATION
   // ========================================================
+
+  let gate3D = null;
+  let hw3D = null;
+
+  try {
+    gate3D = new GhostGate3D('gate-3d-canvas-container', {
+      onAwakenComplete: () => {
+        stageGate.classList.add('stage-hidden');
+        stageAwakening.classList.remove('stage-hidden');
+        startHardwareAwakening();
+      },
+    });
+  } catch (err) {
+    console.error('Failed initializing 3D Ghost Gate:', err);
+  }
+
+  try {
+    hw3D = new HardwareAwakening3D('hardware-3d-canvas-container');
+    hw3D.pause(); // Pause until awakening starts
+  } catch (err) {
+    console.error('Failed initializing 3D Hardware Scene:', err);
+  }
 
   function enterCommandCenter() {
     stageGate.classList.add('stage-hidden');
     stageAwakening.classList.add('stage-hidden');
     stageCommand.style.display = 'flex';
+
+    if (gate3D) gate3D.pause();
+    if (hw3D) hw3D.pause();
+
     accelChart.resize();
     gyroChart.resize();
-    terminal.sys('COMMAND CENTER ACTIVE. TELEMETRY DISPLAY RESTORED.');
+
+    terminal.sys('COMMAND CENTER ACTIVE. 10 HZ STREAM RESTORED.');
     refreshSerialPorts();
     refreshAnomaliesList();
     refreshAiStatus();
@@ -97,8 +125,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function returnToGhostGate() {
-    stageGate.classList.remove('stage-hidden');
+    stageCommand.style.display = 'none';
     stageAwakening.classList.add('stage-hidden');
+    stageGate.classList.remove('stage-hidden');
+
+    if (hw3D) hw3D.pause();
+    if (gate3D) {
+      gate3D.isAwakening = false;
+      gate3D.camera.position.z = 7.5;
+      gate3D.leftLight.intensity = 2.5;
+      gate3D.rightLight.intensity = 2.5;
+      gate3D.resume();
+    }
     terminal.warn('TERMINAL ACCESS LOCKED. CARRIER CONFINED TO GHOST GATE.');
   }
 
@@ -107,9 +145,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chkSkipIntro) chkSkipIntro.checked = true;
     enterCommandCenter();
   } else {
-    // Show Gate
     stageGate.classList.remove('stage-hidden');
     stageAwakening.classList.add('stage-hidden');
+    stageCommand.style.display = 'none';
   }
 
   if (chkSkipIntro) {
@@ -118,23 +156,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Stage 1 -> Stage 2 trigger
-  function awakenSystem() {
-    stageGate.classList.add('stage-hidden');
-    stageAwakening.classList.remove('stage-hidden');
-    startHardwareAwakening();
+  // Stage 1 Trigger
+  function triggerAwaken() {
+    if (gate3D) {
+      gate3D.awaken();
+    } else {
+      stageGate.classList.add('stage-hidden');
+      stageAwakening.classList.remove('stage-hidden');
+      startHardwareAwakening();
+    }
   }
 
   if (btnAwaken) {
-    btnAwaken.addEventListener('click', awakenSystem);
+    btnAwaken.addEventListener('click', triggerAwaken);
   }
 
   window.addEventListener('keydown', (e) => {
+    // Ignore input if user is typing inside an input or select
+    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+      return;
+    }
+
     if (!stageGate.classList.contains('stage-hidden')) {
       if (e.key === 'Escape') {
         enterCommandCenter();
       } else {
-        awakenSystem();
+        triggerAwaken();
       }
     } else if (!stageAwakening.classList.contains('stage-hidden')) {
       if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
@@ -151,120 +198,74 @@ document.addEventListener('DOMContentLoaded', () => {
     btnLockTerminal.addEventListener('click', returnToGhostGate);
   }
 
-  // Stage 2: Hardware Awakening Animation
-  let awakeningAnimId = null;
+  // ========================================================
+  // STAGE 2: HARDWARE AWAKENING BOOT SEQUENCE
+  // ========================================================
 
   async function startHardwareAwakening() {
+    if (hw3D) {
+      hw3D.resume();
+      hw3D.onResize();
+    }
+
     awakeningLog.innerHTML = '';
     const addLog = (msg, level = 'info') => {
       const line = document.createElement('div');
       line.className = `log-line log-${level}`;
-      line.textContent = `[BOOT] ${msg}`;
+      line.textContent = msg;
       awakeningLog.appendChild(line);
       awakeningLog.scrollTop = awakeningLog.scrollHeight;
     };
 
-    addLog('XTENSA DUAL-CORE RTOS TICK INITIALIZED (240 MHz)', 'sys');
-    addLog('MAPPING I2C BUS (SDA=GPIO21, SCL=GPIO22 @ 400 kHz)...', 'info');
-
-    // Query real backend status
+    // Query real backend hardware status
     let realStatus = null;
     try {
       const res = await fetch('/api/status');
       realStatus = await res.json();
     } catch (err) {
-      console.warn('Backend probe during boot:', err);
+      console.warn('Backend status check during awakening:', err);
     }
 
-    // Draw ESP32 Wireframe Canvas
-    if (esp32Canvas) {
-      const ctx = esp32Canvas.getContext('2d');
-      const w = esp32Canvas.width = esp32Canvas.parentElement.clientWidth;
-      const h = esp32Canvas.height = esp32Canvas.parentElement.clientHeight;
+    const steps = [
+      { pct: 15, msg: '[BOOT] INITIALIZING LOCAL TELEMETRY CORE (10 HZ)...', level: 'sys' },
+      { pct: 35, msg: '[BOOT] ENUMERATING SERIAL INTERFACES...', level: 'info' },
+      { pct: 55, msg: '[BOOT] VALIDATING ESP32 TELEMETRY CARRIER...', level: 'info' },
+      { pct: 75, msg: '[BOOT] INITIALIZING I²C SENSOR PATH (SDA=GPIO21, SCL=GPIO22)...', level: 'info' },
+      { pct: 90, msg: '[BOOT] VALIDATING TELEMETRY PROTOCOL (ghost.v1)...', level: 'sys' },
+      { pct: 100, msg: '[BOOT] ENTERING COMMAND CENTER...', level: 'sys' },
+    ];
 
-      let step = 0;
-      const maxSteps = 100;
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      if (stageAwakening.classList.contains('stage-hidden')) {
+        clearInterval(interval);
+        return;
+      }
 
-      function renderWireframe() {
-        ctx.fillStyle = '#010401';
-        ctx.fillRect(0, 0, w, h);
+      if (currentStep < steps.length) {
+        const s = steps[currentStep];
+        awakeningProgressLabel.textContent = `INITIALIZING [${s.pct}%]`;
+        addLog(s.msg, s.level);
+        if (hw3D) hw3D.setAssemblyProgress(s.pct / 100.0);
 
-        const progress = Math.min(1.0, step / maxSteps);
-        awakeningProgressLabel.textContent = `INITIALIZING [${Math.round(progress * 100)}%]`;
-
-        // PCB Silhouette
-        ctx.strokeStyle = '#00ff66';
-        ctx.lineWidth = 1.5;
-        const pcbW = w * 0.7;
-        const pcbH = h * 0.75;
-        const ox = (w - pcbW) / 2;
-        const oy = (h - pcbH) / 2;
-
-        ctx.strokeRect(ox, oy, pcbW * progress, pcbH);
-
-        // Antenna trace on top
-        if (progress > 0.3) {
-          ctx.strokeStyle = '#00ccff';
-          ctx.beginPath();
-          ctx.moveTo(ox + 10, oy + 10);
-          ctx.lineTo(ox + 50, oy + 10);
-          ctx.lineTo(ox + 50, oy + 25);
-          ctx.lineTo(ox + 80, oy + 25);
-          ctx.stroke();
-        }
-
-        // Dual Xtensa Cores
-        if (progress > 0.5) {
-          ctx.strokeStyle = '#ffb000';
-          const chipW = 70;
-          const chipH = 50;
-          const cx = w / 2 - chipW / 2;
-          const cy = h / 2 - chipH / 2;
-          ctx.strokeRect(cx, cy, chipW, chipH);
-          ctx.fillStyle = 'rgba(255, 176, 0, 0.1)';
-          ctx.fillRect(cx, cy, chipW, chipH);
-
-          // Core 0 & Core 1
-          ctx.fillStyle = '#ffb000';
-          ctx.font = '9px monospace';
-          ctx.fillText('CORE 0', cx + 6, cy + 20);
-          ctx.fillText('CORE 1', cx + 6, cy + 38);
-        }
-
-        // I2C Bus trace to MPU6050
-        if (progress > 0.75) {
-          ctx.strokeStyle = '#00ff66';
-          ctx.beginPath();
-          ctx.moveTo(w / 2 + 35, h / 2);
-          ctx.lineTo(ox + pcbW - 20, h / 2);
-          ctx.stroke();
-
-          // MPU6050 chip box
-          ctx.strokeRect(ox + pcbW - 20, h / 2 - 15, 30, 30);
-          ctx.fillText('MPU', ox + pcbW - 16, h / 2 + 5);
-        }
-
-        step += 2;
-        if (step <= maxSteps) {
-          awakeningAnimId = requestAnimationFrame(renderWireframe);
-        } else {
-          // Finished progressive draw
+        if (currentStep === 2) {
+          // Hardware audit result
           if (realStatus && realStatus.is_hardware_connected) {
-            addLog(`PHYSICAL ESP32 LINK CONFIRMED: ${realStatus.serial_port}`, 'sys');
+            addLog(`[BOOT] HARDWARE DETECTED: ${realStatus.serial_port} LINKED`, 'sys');
             hwStatusSummary.textContent = `HARDWARE LINKED: ${realStatus.serial_port}`;
           } else {
-            addLog('PHYSICAL HARDWARE: NO COM CARRIER DETECTED.', 'warn');
-            addLog('ENGAGING DETERMINISTIC TELEMETRY SIMULATOR (10 HZ)...', 'sys');
+            addLog('[BOOT] PHYSICAL HARDWARE: NOT DETECTED (0 COM PORTS)', 'warn');
+            addLog('[BOOT] MODE: SIMULATOR VIRTUAL LINK ENGAGED', 'sys');
             hwStatusSummary.textContent = 'MODE: SIMULATOR VIRTUAL LINK ACTIVE';
           }
-          addLog('SYSTEM READY. TRANSITIONING TO COMMAND CENTER...', 'sys');
-          setTimeout(enterCommandCenter, 600);
         }
+
+        currentStep++;
+      } else {
+        clearInterval(interval);
+        setTimeout(enterCommandCenter, 500);
       }
-      renderWireframe();
-    } else {
-      setTimeout(enterCommandCenter, 500);
-    }
+    }, 450);
   }
 
   // ========================================================
@@ -451,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!listEl) return;
 
       if (!data.events || data.events.length === 0) {
-        listEl.innerHTML = '<div style="color: var(--text-muted); padding: 8px;">No anomaly events recorded yet. Trigger a scenario to generate evidence.</div>';
+        listEl.innerHTML = '<div style="color: var(--text-muted); padding: 8px;">No anomaly events recorded yet. Trigger a scenario from the matrix to generate evidence.</div>';
         return;
       }
 
@@ -660,7 +661,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.stepReplay = async () => {
     await fetch('/api/sessions/replay/pause', { method: 'POST' });
-    // Single step
     terminal.info('REPLAY: STEPPED 1 FRAME');
   };
 

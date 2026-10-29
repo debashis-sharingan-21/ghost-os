@@ -10,29 +10,11 @@
   <!-- CRT Scanline & Vignette Effect -->
   <div class="crt-overlay"></div>
 
-  <!-- STAGE 1: GHOST GATE (CINEMATIC OPENING) -->
+  <!-- STAGE 1: GHOST GATE (CINEMATIC 3D HOLOGRAPHIC OPENING) -->
   <div id="stage-ghost-gate" class="stage-overlay">
     <div class="ghost-gate-container">
-      <!-- Original Phosphor Green Cyber-Matrix Ghost Skull -->
-      <svg class="ghost-skull-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Outer cranial glow shield -->
-        <path d="M40 75 C40 30, 160 30, 160 75 C160 110, 145 130, 135 145 L135 165 C135 170, 125 175, 100 175 C75 175, 65 170, 65 165 L65 145 C55 130, 40 110, 40 75 Z" 
-              stroke="#00ff66" stroke-width="3" fill="#041204" />
-        <!-- Cranial suture lines -->
-        <path d="M100 30 L100 70 M75 40 L100 55 L125 40" stroke="#00993d" stroke-width="1.5" />
-        <!-- Brow ridge -->
-        <path d="M55 78 C70 70, 90 75, 100 78 C110 75, 130 70, 145 78" stroke="#00ff66" stroke-width="2.5" />
-        <!-- Eye Sockets with Blinking Phosphor Pupils -->
-        <ellipse cx="72" cy="95" rx="18" ry="14" fill="#020802" stroke="#00ff66" stroke-width="2" />
-        <ellipse cx="128" cy="95" rx="18" ry="14" fill="#020802" stroke="#00ff66" stroke-width="2" />
-        <circle id="ghost-eye-left" class="ghost-eye" cx="72" cy="95" r="5" fill="#00ff66" filter="drop-shadow(0 0 6px #00ff66)" />
-        <circle id="ghost-eye-right" class="ghost-eye" cx="128" cy="95" r="5" fill="#00ff66" filter="drop-shadow(0 0 6px #00ff66)" />
-        <!-- Nasal cavity -->
-        <path d="M100 110 L94 125 L106 125 Z" fill="#00ff66" />
-        <!-- Jaw & Teeth Matrix -->
-        <path d="M72 145 L128 145 M72 155 L128 155" stroke="#00ff66" stroke-width="2" />
-        <path d="M80 145 L80 165 M93 145 L93 165 M107 145 L107 165 M120 145 L120 165" stroke="#00993d" stroke-width="1.5" />
-      </svg>
+      <!-- Genuine Procedural 3D WebGL Holographic Skull with Living Eye Lights -->
+      <div id="gate-3d-canvas-container" class="gate-3d-box"></div>
 
       <div class="gate-title">GHOST.OS</div>
       <div class="gate-signal-box">
@@ -53,20 +35,18 @@
     </div>
   </div>
 
-  <!-- STAGE 2: HARDWARE AWAKENING (WIREFRAME & BOOT LOG) -->
+  <!-- STAGE 2: HARDWARE AWAKENING (3D EMBEDDED SYSTEM & BOOT AUDIT) -->
   <div id="stage-hardware-awakening" class="stage-overlay stage-hidden">
     <div class="awakening-container">
       <div class="panel-header" style="width: 100%;">
-        <span>SILICON SCHEMATIC TRACE // ESP32-WROOM-32</span>
+        <span>SILICON SCHEMATIC TRACE // ESP32-WROOM-32 &amp; MPU6050</span>
         <span id="awakening-progress-label">INITIALIZING [0%]</span>
       </div>
 
-      <!-- Progressive ESP32 Wireframe Canvas -->
-      <div class="esp32-wireframe-box">
-        <canvas id="esp32-wireframe-canvas" class="esp32-canvas"></canvas>
-      </div>
+      <!-- Real 3D Hardware Scene (ESP32 + MPU6050 + I2C Signal Pulses) -->
+      <div id="hardware-3d-canvas-container" class="esp32-wireframe-box"></div>
 
-      <!-- Live Boot Log with Real Hardware Audit -->
+      <!-- Real-Time Hardware Boot Log -->
       <div id="awakening-log" class="awakening-log"></div>
 
       <div class="awakening-prompt-bar">
@@ -77,7 +57,7 @@
   </div>
 
   <!-- STAGE 3: COMMAND CENTER (MAIN DASHBOARD) -->
-  <div id="stage-command-center" class="terminal-shell">
+  <div id="stage-command-center" class="terminal-shell" style="display: none;">
     <!-- ACCESS TERMINAL / HEADER -->
     <header class="access-terminal">
       <div class="brand-section">
@@ -316,6 +296,10 @@
     </footer>
   </div>
 
+  <!-- BUNDLED LOCAL SCRIPTS (ZERO NETWORK CALLS) -->
+  <script src="/static/js/three.min.js"></script>
+  <script src="/static/js/ghost_gate_3d.js"></script>
+  <script src="/static/js/hardware_scene_3d.js"></script>
   <script src="/static/js/charts.js"></script>
   <script src="/static/js/terminal.js"></script>
   <script src="/static/js/app.js"></script>

@@ -184,9 +184,9 @@ class SensorFreezeRule(BaseAnomalyRule):
             first = recent[0].mpu6050
             identical = all(
                 f.mpu6050.accel_x == first.accel_x and
-                f.mpu6050.accel_y == first.ay and
-                f.mpu6050.accel_z == first.az and
-                f.mpu6050.gyro_x == first.gx
+                f.mpu6050.accel_y == first.accel_y and
+                f.mpu6050.accel_z == first.accel_z and
+                f.mpu6050.gyro_x == first.gyro_x
                 for f in recent
             )
             if identical:
