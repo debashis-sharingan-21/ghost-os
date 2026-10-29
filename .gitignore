@@ -218,3 +218,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# GHOST.OS Project Specific
+.env
+data/recordings/
+data/sessions/
+data/logs/
+models/
+*.log
+*.sqlite3
+*.db

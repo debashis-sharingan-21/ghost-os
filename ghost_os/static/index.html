@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GHOST.OS // The Machine Remembers</title>
+  <link rel="stylesheet" href="/static/css/ghost.css">
+</head>
+<body>
+  <!-- CRT Scanline & Vignette Effect -->
+  <div class="crt-overlay"></div>
+
+  <div class="terminal-shell">
+    <!-- ACCESS TERMINAL / HEADER -->
+    <header class="access-terminal">
+      <div class="brand-section">
+        <span class="brand-title">GHOST.OS</span>
+        <span class="brand-sub">THE MACHINE REMEMBERS // TELEMETRY CORE v1.0</span>
+      </div>
+      <div class="telemetry-badges">
+        <span id="badge-source" class="badge badge-sim">SIMULATION ACTIVE</span>
+        <span id="badge-alert" class="badge badge-status-online">NOMINAL</span>
+        <span id="stat-rate" class="badge" style="border-color: #557755; color: #88aa88;">10.0 HZ</span>
+        <span class="badge" style="border-color: #335533; color: #55aa55;">FRAME #<span id="stat-seq">0</span></span>
+      </div>
+    </header>
+
+    <!-- MAIN DASHBOARD GRID -->
+    <main class="dashboard-grid">
+      <!-- LEFT PANEL: DEVICE LINK & HARDWARE HEALTH -->
+      <section class="panel">
+        <div class="panel-header">
+          <span>DEVICE LINK</span>
+          <div class="indicator"></div>
+        </div>
+
+        <div class="link-controls">
+          <div class="field-group">
+            <label for="serial-port-select">INTERFACE / PORT</label>
+            <select id="serial-port-select" class="input-select">
+              <option value="sim">VIRTUAL SIMULATOR (10 Hz)</option>
+              <option value="COM1">COM1 (Hardware)</option>
+              <option value="COM3">COM3 (ESP32-WROOM)</option>
+              <option value="COM4">COM4 (Silicon Labs CP210x)</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="baud-rate-select">BAUD RATE</label>
+            <select id="baud-rate-select" class="input-select">
+              <option value="115200">115200 bps (Standard)</option>
+              <option value="460800">460800 bps (High-Speed)</option>
+              <option value="921600">921600 bps (Burst)</option>
+            </select>
+          </div>
+
+          <button id="btn-toggle-link" class="btn" style="margin-top: 4px;">LINK DISENGAGED (SIM ACTIVE)</button>
+        </div>
+
+        <div class="panel-header" style="margin-top: 10px;">
+          <span>SYSTEM HEALTH</span>
+          <div class="indicator"></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="label">FREE HEAP</span>
+            <span class="val"><span id="stat-heap">218 KB</span></span>
+          </div>
+          <div class="stat-card">
+            <span class="label">SUPPLY RAIL</span>
+            <span class="val"><span id="stat-vcc">3.30 V</span></span>
+          </div>
+          <div class="stat-card">
+            <span class="label">DIE TEMP</span>
+            <span class="val"><span id="stat-temp">26.5</span><span class="unit">°C</span></span>
+          </div>
+          <div class="stat-card">
+            <span class="label">UPTIME</span>
+            <span class="val"><span id="stat-uptime">0.0s</span></span>
+          </div>
+        </div>
+
+        <div class="panel-header" style="margin-top: 10px;">
+          <span>SENSOR STATUS</span>
+          <div class="indicator"></div>
+        </div>
+        <div class="stat-card">
+          <span class="label">MPU6050 6-DOF STATE</span>
+          <span class="val" id="stat-sensor-status" style="font-size: 14px;">OK</span>
+        </div>
+      </section>
+
+      <!-- CENTER PANEL: LIVE SIGNALS & CHARTS -->
+      <section class="panel live-signals">
+        <div class="panel-header">
+          <span>LIVE SIGNALS // MPU6050 3-AXIS ACCELEROMETER</span>
+          <div class="indicator"></div>
+        </div>
+
+        <!-- Accelerometer Chart -->
+        <div class="chart-container">
+          <canvas id="accel-canvas"></canvas>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background: #ff3366;"></div><span>Ax: <b id="stat-ax">0.00</b> m/s²</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background: #00ff66;"></div><span>Ay: <b id="stat-ay">0.00</b> m/s²</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background: #00ccff;"></div><span>Az: <b id="stat-az">9.81</b> m/s²</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background: #ffcc00;"></div><span>|A|: <b id="stat-amag">9.81</b> m/s²</span></div>
+        </div>
+
+        <div class="panel-header" style="margin-top: 6px;">
+          <span>LIVE SIGNALS // MPU6050 3-AXIS GYROSCOPE</span>
+          <div class="indicator"></div>
+        </div>
+
+        <!-- Gyroscope Chart -->
+        <div class="chart-container">
+          <canvas id="gyro-canvas"></canvas>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background: #ff6600;"></div><span>Gx (Roll): <b id="stat-gx">0.0</b> °/s</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background: #ff00ff;"></div><span>Gy (Pitch): <b id="stat-gy">0.0</b> °/s</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background: #33ffff;"></div><span>Gz (Yaw): <b id="stat-gz">0.0</b> °/s</span></div>
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL: ANOMALY MATRIX & FORENSIC TERMINAL -->
+      <section class="panel">
+        <div class="panel-header">
+          <span>ANOMALY INJECTION MATRIX</span>
+          <div class="indicator" style="background: var(--amber-warning); box-shadow: 0 0 6px var(--amber-warning);"></div>
+        </div>
+
+        <div class="scenario-grid">
+          <button class="btn scenario-btn" onclick="triggerScenario('free_fall', 3.0)">
+            <span>FREE FALL DROP</span>
+            <span class="tag btn-amber">ZERO-G</span>
+          </button>
+          <button class="btn scenario-btn" onclick="triggerScenario('high_g_impact', 3.0)">
+            <span>KINETIC IMPACT</span>
+            <span class="tag btn-red">>40G</span>
+          </button>
+          <button class="btn scenario-btn" onclick="triggerScenario('tumble_spin', 4.0)">
+            <span>TUMBLE RUNAWAY</span>
+            <span class="tag btn-amber">>500°/s</span>
+          </button>
+          <button class="btn scenario-btn" onclick="triggerScenario('sensor_freeze', 4.0)">
+            <span>I2C SENSOR FREEZE</span>
+            <span class="tag btn-red">LOCKUP</span>
+          </button>
+          <button class="btn scenario-btn" onclick="triggerScenario('thermal_spike', 5.0)">
+            <span>THERMAL RUNAWAY</span>
+            <span class="tag btn-amber">>65°C</span>
+          </button>
+          <button class="btn scenario-btn" onclick="triggerScenario('brownout', 4.0)">
+            <span>SUPPLY BROWNOUT</span>
+            <span class="tag btn-red">&lt;2.5V</span>
+          </button>
+          <button class="btn btn-amber" style="margin-top: 4px;" onclick="resetScenario()">
+            RESTORE NOMINAL BASELINE
+          </button>
+        </div>
+
+        <div class="panel-header" style="margin-top: 10px;">
+          <span>GHOST LOG TERMINAL</span>
+          <div class="indicator"></div>
+        </div>
+
+        <!-- Scrolling CRT Log Console -->
+        <div id="terminal-console" class="terminal-console"></div>
+      </section>
+    </main>
+
+    <!-- FOOTER / STATUS BAR -->
+    <footer class="status-bar">
+      <span>PROTOCOL: <b>ghost.v1</b> [JSONL Stream 10Hz]</span>
+      <span>TRANSPORT: <b>WEBSOCKET ACTIVE</b></span>
+      <span>STORAGE: <b>LOCAL IN-MEMORY BUFFER</b> (500 FRAMES)</span>
+      <span>SYSTEM: <b>OFFLINE AUTONOMOUS</b></span>
+    </footer>
+  </div>
+
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/terminal.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
