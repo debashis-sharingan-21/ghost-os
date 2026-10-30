@@ -9,6 +9,7 @@
 <body>
   <!-- CRT Scanline & Vignette Effect -->
   <div class="crt-overlay"></div>
+  <div id="screen-pulse-overlay" class="screen-pulse-overlay"></div>
 
   <!-- STAGE 1: GHOST GATE (CINEMATIC 3D HOLOGRAPHIC OPENING) -->
   <div id="stage-ghost-gate" class="stage-overlay">
@@ -152,6 +153,18 @@
         <div style="display: flex; gap: 6px; align-items: center;">
           <button id="btn-record" class="btn btn-red" style="flex: 1;" onclick="toggleRecording()">REC SESSION</button>
           <span id="record-status-label" style="font-size: 10px; color: var(--text-dim);">IDLE</span>
+        </div>
+
+        <div class="panel-header" style="margin-top: 10px;">
+          <span>3D GHOST CARRIER</span>
+          <div id="indicator-ghost-presence" class="indicator" style="background: var(--phosphor-green); box-shadow: 0 0 6px var(--phosphor-green);"></div>
+        </div>
+        <div id="ghost-core-viewport" class="ghost-core-viewport">
+          <div id="ghost-hud-overlay" class="ghost-hud-overlay">
+            <div id="ghost-hud-tag" class="ghost-hud-tag tag-nominal">NOMINAL</div>
+            <div id="ghost-hud-narrative" class="ghost-hud-narrative">CARRIER ACTIVE</div>
+          </div>
+          <div id="ghost-core-canvas-container" class="ghost-core-canvas"></div>
         </div>
       </section>
 

@@ -81,11 +81,39 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1000);
 
   // ========================================================
-  // 3D STAGE INITIALIZATION
+  // 3D STAGE & HOLOGRAPHIC GHOST INITIALIZATION
   // ========================================================
 
   let gate3D = null;
   let hw3D = null;
+  let coreGhost = null;
+
+  // Track seen anomaly events to prevent duplicate animations
+  const seenEventIds = new Set();
+  let lastInjectedScenario = null;
+
+  function mapRuleToScenario(ruleOrScenario) {
+    if (!ruleOrScenario) return 'NORMAL';
+    const s = ruleOrScenario.toUpperCase();
+    if (s.includes('FREE') || s.includes('FALL')) return 'FREE_FALL';
+    if (s.includes('IMPACT') || s.includes('KINETIC') || s.includes('HIGH_G')) return 'HIGH_G_IMPACT';
+    if (s.includes('TUMBLE') || s.includes('SPIN') || s.includes('ANGULAR')) return 'TUMBLE_SPIN';
+    if (s.includes('FREEZE') || s.includes('LOCKUP') || s.includes('GAP')) return 'SENSOR_FREEZE';
+    if (s.includes('THERMAL') || s.includes('SPIKE') || s.includes('HEAT')) return 'THERMAL_SPIKE';
+    if (s.includes('BROWNOUT') || s.includes('VOLTAGE') || s.includes('VCC')) return 'BROWNOUT';
+    if (s.includes('NORMAL') || s.includes('NOMINAL') || s.includes('RESET')) return 'NORMAL';
+    return 'NORMAL';
+  }
+
+  function triggerGhostAnomaly(ruleOrScenario, severity = 'CRITICAL', label = '', narrative = '') {
+    const scenario = mapRuleToScenario(ruleOrScenario);
+    if (coreGhost) {
+      coreGhost.triggerAnomaly(scenario, severity, label, narrative);
+    }
+    if (gate3D) {
+      gate3D.triggerAnomaly(scenario, severity, label, narrative);
+    }
+  }
 
   try {
     gate3D = new GhostGate3D('gate-3d-canvas-container', {
@@ -106,6 +134,17 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error('Failed initializing 3D Hardware Scene:', err);
   }
 
+  try {
+    coreGhost = new GhostSkull3D('ghost-core-canvas-container', {
+      isGate: false,
+      cameraZ: 5.6,
+      scale: 0.88,
+    });
+    coreGhost.pause(); // Initialized paused until Command Center enters
+  } catch (err) {
+    console.error('Failed initializing 3D Ghost Core:', err);
+  }
+
   function enterCommandCenter() {
     stageGate.classList.add('stage-hidden');
     stageAwakening.classList.add('stage-hidden');
@@ -113,6 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (gate3D) gate3D.pause();
     if (hw3D) hw3D.pause();
+    if (coreGhost) {
+      coreGhost.resume();
+      coreGhost.onResize();
+    }
 
     accelChart.resize();
     gyroChart.resize();
@@ -129,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
     stageAwakening.classList.add('stage-hidden');
     stageGate.classList.remove('stage-hidden');
 
+    if (coreGhost) coreGhost.pause();
     if (hw3D) hw3D.pause();
     if (gate3D) {
       gate3D.isAwakening = false;
@@ -136,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
       gate3D.leftLight.intensity = 2.5;
       gate3D.rightLight.intensity = 2.5;
       gate3D.resume();
+      gate3D.resetToDormant();
     }
     terminal.warn('TERMINAL ACCESS LOCKED. CARRIER CONFINED TO GHOST GATE.');
   }
@@ -320,15 +365,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (flags.anomaly_active) {
       badgeAlert.textContent = 'ANOMALY DETECTED';
       badgeAlert.className = 'badge badge-status-alert';
+
+      let triggeredThisFrame = false;
+      if (Array.isArray(f.new_anomalies) && f.new_anomalies.length > 0) {
+        for (const ev of f.new_anomalies) {
+          if (!seenEventIds.has(ev.event_id)) {
+            seenEventIds.add(ev.event_id);
+            triggerGhostAnomaly(ev.rule_id, ev.severity, ev.title, 'THE MACHINE HAS LEFT A TRACE.');
+            terminal.crit(`GHOST TRACE: THE MACHINE HAS LEFT A TRACE. [${ev.event_id}]`);
+            triggeredThisFrame = true;
+          }
+        }
+      }
+
       if (!prevAnomalyState) {
         terminal.crit(`ANOMALY TRIGGERED [Code 0x${flags.error_code.toString(16).toUpperCase()}] Status: ${mpu.status}`);
         refreshAnomaliesList();
+        if (!triggeredThisFrame) {
+          const scen = lastInjectedScenario || 'CRITICAL';
+          triggerGhostAnomaly(scen, 'CRITICAL', scen.toUpperCase(), 'THE MACHINE HAS LEFT A TRACE.');
+          terminal.crit('GHOST TRACE: THE MACHINE HAS LEFT A TRACE.');
+        }
       }
     } else {
       badgeAlert.textContent = 'NOMINAL';
       badgeAlert.className = 'badge badge-status-online';
       if (prevAnomalyState) {
         terminal.sys('TELEMETRY STABILIZED. RECOVERY VERIFIED.');
+        triggerGhostAnomaly('NORMAL', 'INFO', 'NOMINAL BASELINE', 'CARRIER STABILIZED');
+        lastInjectedScenario = null;
         refreshAnomaliesList();
       }
     }
@@ -418,6 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ========================================================
 
   window.triggerScenario = async (scenarioName, durationSec) => {
+    lastInjectedScenario = scenarioName;
     terminal.warn(`DISPATCHING SCENARIO INJECTION: ${scenarioName.toUpperCase()}...`);
     try {
       const res = await fetch('/api/simulator/scenario', {
@@ -435,6 +501,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.resetScenario = async () => {
+    lastInjectedScenario = null;
+    triggerGhostAnomaly('NORMAL', 'INFO', 'NOMINAL BASELINE', 'CARRIER STABILIZED');
     terminal.info('RESETTING SIMULATOR TO NOMINAL BASELINE...');
     try {
       await fetch('/api/simulator/reset', { method: 'POST' });
@@ -527,46 +595,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     switchTab('tab-ai');
     const resultContainer = document.getElementById('ai-result-container');
-    resultContainer.innerHTML = '<div style="color: var(--cyan-accent); font-size: 11px;">SYNTHESIZING PHYSICAL FORENSIC EXPLANATION...</div>';
+
+    // Forensic Narrative: RECOVERING LAST TRANSMISSION...
+    if (coreGhost) coreGhost.setNarrative('RECOVERING LAST TRANSMISSION...', 3000, 'cyan');
+    if (gate3D) gate3D.setNarrative('RECOVERING LAST TRANSMISSION...', 3000, 'cyan');
+    terminal.sys('GHOST PRESENCE: RECOVERING LAST TRANSMISSION...');
+
+    resultContainer.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:8px; padding:12px; color:var(--cyan-accent); font-family:var(--font-mono);">
+        <div style="font-size:12px; font-weight:bold; letter-spacing:1px; animation:crt-flicker 0.2s infinite alternate;">
+          &gt;&gt; RECOVERING LAST TRANSMISSION...
+        </div>
+        <div style="font-size:10px; color:var(--text-dim);">
+          [RECONSTRUCTING PRE-ANOMALY KINEMATICS &amp; I²C REGISTER EVIDENCE]
+        </div>
+      </div>
+    `;
 
     try {
       const res = await fetch(`/api/ai/interrogate/${selectedEventId}`, { method: 'POST' });
       const exp = await res.json();
 
-      let hypHtml = '';
-      (exp.hypotheses || []).forEach(h => {
-        hypHtml += `
-          <div style="margin-bottom: 6px;">
-            <b style="color: var(--text-bright);">${h.rank}. ${h.title}</b> (${h.confidence_pct}% Confidence - ${h.probability})
-            <div style="color: var(--text-dim); font-size: 10px;">${h.reasoning}</div>
+      // Forensic Narrative: I REMEMBER WHAT HAPPENED.
+      if (coreGhost) coreGhost.setNarrative('I REMEMBER WHAT HAPPENED.', 2500, 'green');
+      if (gate3D) gate3D.setNarrative('I REMEMBER WHAT HAPPENED.', 2500, 'green');
+      terminal.sys('GHOST PRESENCE: I REMEMBER WHAT HAPPENED.');
+
+      setTimeout(() => {
+        let hypHtml = '';
+        (exp.hypotheses || []).forEach(h => {
+          hypHtml += `
+            <div style="margin-bottom: 6px;">
+              <b style="color: var(--text-bright);">${h.rank}. ${h.title}</b> (${h.confidence_pct}% Confidence - ${h.probability})
+              <div style="color: var(--text-dim); font-size: 10px;">${h.reasoning}</div>
+            </div>
+          `;
+        });
+
+        let obsHtml = (exp.observations || []).map(o => `<li>${o}</li>`).join('');
+        let testHtml = (exp.recommended_tests || []).map(t => `<li>${t}</li>`).join('');
+        let uncertHtml = (exp.uncertainties || []).map(u => `<li>${u}</li>`).join('');
+
+        resultContainer.innerHTML = `
+          <div class="ai-meta-bar">
+            <span>EVENT: ${exp.event_id}</span>
+            <span>PROVIDER: ${exp.provider} (${exp.model})</span>
+            <span>LATENCY: ${exp.latency_ms} ms</span>
           </div>
+          <div style="font-size: 12px; font-weight: bold; color: var(--phosphor-green); margin: 6px 0;">${exp.summary}</div>
+          
+          <div class="ai-section-title">1. OBSERVED EVIDENCE (PHYSICAL FACTS)</div>
+          <ul class="ai-list">${obsHtml}</ul>
+
+          <div class="ai-section-title">2. PHYSICAL HYPOTHESES &amp; ROOT CAUSE</div>
+          <div style="margin-left: 6px;">${hypHtml}</div>
+
+          <div class="ai-section-title">3. RECOMMENDED ENGINEERING BENCH TESTS</div>
+          <ul class="ai-list">${testHtml}</ul>
+
+          ${uncertHtml ? `<div class="ai-section-title">4. UNCERTAINTIES</div><ul class="ai-list">${uncertHtml}</ul>` : ''}
         `;
-      });
-
-      let obsHtml = (exp.observations || []).map(o => `<li>${o}</li>`).join('');
-      let testHtml = (exp.recommended_tests || []).map(t => `<li>${t}</li>`).join('');
-      let uncertHtml = (exp.uncertainties || []).map(u => `<li>${u}</li>`).join('');
-
-      resultContainer.innerHTML = `
-        <div class="ai-meta-bar">
-          <span>EVENT: ${exp.event_id}</span>
-          <span>PROVIDER: ${exp.provider} (${exp.model})</span>
-          <span>LATENCY: ${exp.latency_ms} ms</span>
-        </div>
-        <div style="font-size: 12px; font-weight: bold; color: var(--phosphor-green);">${exp.summary}</div>
-        
-        <div class="ai-section-title">1. OBSERVED EVIDENCE (PHYSICAL FACTS)</div>
-        <ul class="ai-list">${obsHtml}</ul>
-
-        <div class="ai-section-title">2. PHYSICAL HYPOTHESES & ROOT CAUSE</div>
-        <div style="margin-left: 6px;">${hypHtml}</div>
-
-        <div class="ai-section-title">3. RECOMMENDED ENGINEERING BENCH TESTS</div>
-        <ul class="ai-list">${testHtml}</ul>
-
-        ${uncertHtml ? `<div class="ai-section-title">4. UNCERTAINTIES</div><ul class="ai-list">${uncertHtml}</ul>` : ''}
-      `;
-      terminal.sys(`AI FORENSIC REPORT GENERATED FOR ${exp.event_id} VIA ${exp.provider}.`);
+        terminal.sys(`AI FORENSIC REPORT GENERATED FOR ${exp.event_id} VIA ${exp.provider}.`);
+      }, 500);
     } catch (err) {
       resultContainer.innerHTML = `<div style="color: var(--red-alert);">Interrogation failed: ${err.message}</div>`;
     }
