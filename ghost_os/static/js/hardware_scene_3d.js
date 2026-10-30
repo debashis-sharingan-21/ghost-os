@@ -37,27 +37,42 @@ class HardwareAwakening3D {
     this.camera.position.set(0, 3.5, 7.5);
     this.camera.lookAt(0, 0, 0);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setSize(w, h);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.container.appendChild(this.renderer.domElement);
+    try {
+      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      this.renderer.setSize(w, h);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      this.container.appendChild(this.renderer.domElement);
+    } catch (e) {
+      console.warn('WebGL initialization failed for hardware scene:', e);
+      this.container.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#00ff66;font-family:var(--font-mono, monospace);text-align:center;">
+          <div style="font-size:13px;color:#00ff66;letter-spacing:1px;font-weight:bold;">ESP32-WROOM-32 ◄───[ I²C BUS: SDA=GPIO21 / SCL=GPIO22 ]───► MPU6050</div>
+          <div style="font-size:10px;color:#88aa88;margin-top:6px;letter-spacing:1px;">[HARDWARE SCHEMATIC ACTIVE // 2D CARRIER]</div>
+        </div>
+      `;
+      return;
+    }
 
     // 2. Technical Lab Grid
     const grid = new THREE.GridHelper(16, 24, 0x00ff66, 0x0a240e);
     grid.position.y = -1.2;
     this.scene.add(grid);
 
-    // 3. Lighting
-    const amb = new THREE.AmbientLight(0x00220a, 1.5);
+    // 3. Lighting (Rich cinematic illumination for dark CRT)
+    const amb = new THREE.AmbientLight(0x003314, 2.2);
     this.scene.add(amb);
 
-    const spot = new THREE.SpotLight(0x00ff66, 2.5, 15, Math.PI / 4, 0.4);
-    spot.position.set(2, 6, 4);
+    const spot = new THREE.SpotLight(0x00ff66, 3.5, 20, Math.PI / 4, 0.4);
+    spot.position.set(1, 7, 5);
     this.scene.add(spot);
 
-    const cyanRim = new THREE.DirectionalLight(0x00ffff, 1.2);
-    cyanRim.position.set(-5, 2, -3);
+    const cyanRim = new THREE.DirectionalLight(0x00ffff, 1.8);
+    cyanRim.position.set(-5, 3, -2);
     this.scene.add(cyanRim);
+
+    const amberRim = new THREE.PointLight(0xffaa00, 2.2, 12);
+    amberRim.position.set(3, 3, 2);
+    this.scene.add(amberRim);
 
     // 4. Hardware Models Group
     this.hwGroup = new THREE.Group();
@@ -189,8 +204,8 @@ class HardwareAwakening3D {
   }
 
   buildI2CInterconnect() {
-    // 3D Bezier Curves for SDA (cyan) and SCL (green) lines
-    // ESP32 GPIO 21 & GPIO 22 connect to MPU6050
+    // 3D Bezier Curves for SDA (cyan, GPIO21) and SCL (amber, GPIO22) lines
+    // High-contrast color differentiation for distinct signal paths
     const startSDA = new THREE.Vector3(-0.65, 0.15, 0.2);
     const midSDA = new THREE.Vector3(0.5, 0.9, 0.6);
     const endSDA = new THREE.Vector3(1.7, 0.25, 0.75);
@@ -198,7 +213,7 @@ class HardwareAwakening3D {
 
     const sdaPoints = this.sdaCurve.getPoints(30);
     const sdaGeom = new THREE.BufferGeometry().setFromPoints(sdaPoints);
-    const sdaMat = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2, transparent: true, opacity: 0.85 });
+    const sdaMat = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 2.5, transparent: true, opacity: 0.9 });
     this.sdaLine = new THREE.Line(sdaGeom, sdaMat);
     this.hwGroup.add(this.sdaLine);
 
@@ -209,14 +224,14 @@ class HardwareAwakening3D {
 
     const sclPoints = this.sclCurve.getPoints(30);
     const sclGeom = new THREE.BufferGeometry().setFromPoints(sclPoints);
-    const sclMat = new THREE.LineBasicMaterial({ color: 0x00ff66, linewidth: 2, transparent: true, opacity: 0.85 });
+    const sclMat = new THREE.LineBasicMaterial({ color: 0xffaa00, linewidth: 2.5, transparent: true, opacity: 0.9 });
     this.sclLine = new THREE.Line(sclGeom, sclMat);
     this.hwGroup.add(this.sclLine);
 
-    // Traveling Electrical Energy Pulses along SDA and SCL
-    const pulseGeom = new THREE.SphereGeometry(0.06, 12, 12);
-    const sdaPulseMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-    const sclPulseMat = new THREE.MeshBasicMaterial({ color: 0x00ff66 });
+    // Traveling Electrical Energy Pulses along SDA (Cyan) and SCL (Amber)
+    const pulseGeom = new THREE.SphereGeometry(0.07, 12, 12);
+    const sdaPulseMat = new THREE.MeshBasicMaterial({ color: 0x55ffff });
+    const sclPulseMat = new THREE.MeshBasicMaterial({ color: 0xffcc33 });
 
     this.pulseSDA = new THREE.Mesh(pulseGeom, sdaPulseMat);
     this.pulseSCL = new THREE.Mesh(pulseGeom, sclPulseMat);

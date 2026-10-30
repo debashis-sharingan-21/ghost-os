@@ -36,11 +36,22 @@ class GhostGate3D {
     this.camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
     this.camera.position.set(0, 0, 7.5);
 
-    // 2. Renderer
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-    this.renderer.setSize(w, h);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.container.appendChild(this.renderer.domElement);
+    // 2. Renderer with graceful WebGL fallback
+    try {
+      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+      this.renderer.setSize(w, h);
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      this.container.appendChild(this.renderer.domElement);
+    } catch (e) {
+      console.warn('WebGL initialization failed, falling back to 2D display:', e);
+      this.container.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#00ff66;font-family:var(--font-mono, monospace);text-align:center;">
+          <div style="font-size:64px;filter:drop-shadow(0 0 12px #00ff66);animation:pulse-amber 1.5s infinite alternate;">☠</div>
+          <div style="font-size:11px;margin-top:10px;color:#88aa88;letter-spacing:1px;">[2D AUTONOMOUS CARRIER ENGAGED // WEBGL ACCELERATOR BYPASS]</div>
+        </div>
+      `;
+      return;
+    }
 
     // 3. Lighting
     const ambientLight = new THREE.AmbientLight(0x003311, 1.2);

@@ -44,7 +44,15 @@
       </div>
 
       <!-- Real 3D Hardware Scene (ESP32 + MPU6050 + I2C Signal Pulses) -->
-      <div id="hardware-3d-canvas-container" class="esp32-wireframe-box"></div>
+      <div id="hardware-3d-canvas-container" class="esp32-wireframe-box">
+        <div class="hw-hud-badge hw-hud-esp32">ESP32-WROOM-32 (I²C MASTER // 240MHz)</div>
+        <div class="hw-hud-badge hw-hud-mpu">MPU-6050 (6-DOF SENSOR // 0x68)</div>
+        <div class="hw-hud-bus">
+          <span style="color: #00ffff;">● SDA (GPIO 21)</span> &nbsp;|&nbsp; 
+          <span style="color: #ffaa00;">● SCL (GPIO 22)</span> &nbsp;|&nbsp; 
+          <span>400 kHz FAST-MODE</span>
+        </div>
+      </div>
 
       <!-- Real-Time Hardware Boot Log -->
       <div id="awakening-log" class="awakening-log"></div>

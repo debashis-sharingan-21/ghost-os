@@ -212,6 +212,52 @@ body {
   display: block;
 }
 
+.hw-hud-badge {
+  position: absolute;
+  top: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: rgba(1, 10, 3, 0.85);
+  border: 1px solid var(--phosphor-green-dim);
+  color: var(--text-bright);
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+.hw-hud-esp32 {
+  left: 12px;
+  border-color: rgba(0, 255, 102, 0.4);
+}
+
+.hw-hud-mpu {
+  right: 12px;
+  border-color: rgba(0, 204, 255, 0.4);
+  color: var(--cyan-accent);
+}
+
+.hw-hud-bus {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  background: rgba(0, 5, 0, 0.85);
+  padding: 4px 12px;
+  border-radius: 3px;
+  border: 1px solid var(--bg-panel-border);
+  color: var(--text-dim);
+  pointer-events: none;
+  z-index: 5;
+  white-space: nowrap;
+}
+
 .awakening-log {
   width: 100%;
   height: 150px;
