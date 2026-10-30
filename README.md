@@ -15,6 +15,8 @@
 
 ## Architecture & Visual Overview
 
+![GHOST.OS Command Center](docs/assets/screenshots/command_center.png)
+
 ```
                         ┌─────────────────────────────────────────────────────────┐
                         │                   PHYSICAL HARDWARE                     │
@@ -54,6 +56,16 @@
 
 ---
 
+## 3D Cinematic Interface
+
+![GHOST.OS 3D Gate](docs/assets/screenshots/ghost_gate.png)
+
+1. **GHOST GATE**: Full-screen CRT terminal with a procedural 3D WebGL skull, breathing neon wireframe contours, living point-light eye pupils that blink and observe cursor movements, and a signal sweep beam.
+2. **HARDWARE AWAKENING**: Real 3D technical scene featuring an ESP32-WROOM-32 board, MPU6050 sensor, and dynamic traveling electrical pulses along the SDA and SCL I2C lines. Includes a real-time boot log auditing host hardware ports.
+3. **COMMAND CENTER**: High-performance dual oscilloscopes with dynamic auto-scaling and in-canvas HUD readouts, Device Link controls, Anomaly Matrix, Ghost Trace timeline, AI Interrogation viewer, and CRT log console.
+
+---
+
 ## Core Subsystems
 
 ### 1. Versioned JSON Lines Telemetry Protocol (`ghost.v1`)
@@ -77,26 +89,25 @@ Provides zero-hardware benchmark and automated test capability with 7 repeatable
 * Evaluates sliding telemetry windows with configurable persistence and hysteresis.
 * **Ghost Trace Ring Buffer**: Captures a 200-frame forensic circular buffer around each breach, preserving the exact physics trajectory preceding an incident.
 
-### 4. Local AI Diagnostic Interrogator
+### 4. Local AI Diagnostic Interrogator & Ollama Setup
 * **Provider Abstraction**: Decoupled interface supporting local open-weight LLMs via Ollama (`llama3.2:1b`, `llama3.2:3b`, `qwen2.5`) with a deterministic, physics-grounded **Forensic Rule Engine** offline fallback.
 * **Structured Output Schema**:
   1. Observed physical facts (with exact numerical citations).
   2. Ranked physical hypotheses with confidence percentages.
   3. Actionable engineering bench tests (I2C clock line verification, wiring harness strain relief, MEMS die 1G static test).
   4. Uncertainty boundaries.
-* **Safety Policy**: The AI is strictly advisory and **never** executes shell commands, flashes firmware, or actuates GPIO.
+* **Ollama Configuration (Optional)**:
+  ```bash
+  # Install Ollama from https://ollama.ai/ and pull a lightweight model:
+  ollama pull llama3.2:1b
+  # Run Ollama (listens by default on http://localhost:11434):
+  ollama serve
+  ```
+  If Ollama is not running, GHOST.OS automatically engages its internal deterministic forensic reasoning engine without interruption.
 
 ### 5. Digital Afterlife Session Recording & Replay
 * Saves diagnostic sessions to timestamped `.jsonl` files in `data/sessions/`.
 * Replays past sessions through the live telemetry pipeline with play, pause, single-step, and $0.5\times$ to $4.0\times$ speed multipliers.
-
----
-
-## 3D Cinematic Interface
-
-1. **GHOST GATE**: Full-screen CRT terminal with a procedural 3D WebGL skull, breathing neon wireframe contours, living point-light eye pupils that blink and observe cursor movements, and a signal sweep beam.
-2. **HARDWARE AWAKENING**: Real 3D technical scene featuring an ESP32-WROOM-32 board, MPU6050 sensor, and dynamic traveling electrical pulses along the SDA and SCL I2C lines. Includes a real-time boot log auditing host hardware ports.
-3. **COMMAND CENTER**: High-performance dual oscilloscopes with dynamic auto-scaling and in-canvas HUD readouts, Device Link controls, Anomaly Matrix, Ghost Trace timeline, AI Interrogation viewer, and CRT log console.
 
 ---
 

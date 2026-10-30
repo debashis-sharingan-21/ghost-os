@@ -351,6 +351,15 @@ header.access-terminal {
   box-shadow: 0 0 8px var(--phosphor-green-glow);
 }
 
+#view-tab-live,
+#view-tab-trace,
+#view-tab-ai,
+#view-tab-replay {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 /* Dashboard Grid */
 .dashboard-grid {
   display: grid;
