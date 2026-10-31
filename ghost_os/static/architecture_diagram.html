@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GHOST.OS Architecture</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #030806;
+      color: #00ff66;
+      font-family: 'Consolas', 'Courier New', monospace;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 48px;
+      position: relative;
+    }
+    /* CRT Scanlines */
+    body::before {
+      content: " ";
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 2px solid #00ff66;
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+    .title {
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 4px;
+      text-shadow: 0 0 12px rgba(0, 255, 102, 0.6);
+    }
+    .sub {
+      color: #88aa88;
+      font-size: 14px;
+      letter-spacing: 2px;
+      margin-top: 4px;
+    }
+    .badge-bar {
+      display: flex;
+      gap: 12px;
+    }
+    .badge {
+      border: 1px solid #00ff66;
+      padding: 4px 12px;
+      font-size: 12px;
+      background: rgba(0, 255, 102, 0.08);
+      letter-spacing: 1px;
+    }
+    .badge-amber { border-color: #ffaa00; color: #ffaa00; background: rgba(255, 170, 0, 0.08); }
+    .badge-cyan { border-color: #00ffff; color: #00ffff; background: rgba(0, 255, 255, 0.08); }
+    .badge-purple { border-color: #b84dff; color: #b84dff; background: rgba(184, 77, 255, 0.08); }
+
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: 320px 280px 380px 380px 380px;
+      gap: 20px;
+      flex: 1;
+    }
+    .col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card {
+      background: rgba(4, 24, 14, 0.7);
+      border: 1px solid #005522;
+      border-radius: 4px;
+      padding: 16px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 6px;
+    }
+    .card-title::before {
+      content: "▶";
+      font-size: 10px;
+    }
+    .card-hw { border-color: #00ff66; }
+    .card-hw .card-title { color: #00ff66; }
+    .card-sim { border-color: #00ffff; }
+    .card-sim .card-title { color: #00ffff; }
+    .card-trans { border-color: #33aaff; }
+    .card-trans .card-title { color: #33aaff; }
+    .card-core { border-color: #ffaa00; }
+    .card-core .card-title { color: #ffaa00; }
+    .card-fault { border-color: #ff3366; }
+    .card-fault .card-title { color: #ff3366; }
+    .card-ai { border-color: #b84dff; }
+    .card-ai .card-title { color: #b84dff; }
+    .card-ui { border-color: #00ffaa; }
+    .card-ui .card-title { color: #00ffaa; }
+
+    .card-content {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #bbddcc;
+    }
+    .tag {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 2px;
+      margin: 2px 2px 2px 0;
+      font-size: 10px;
+      color: #ddffea;
+    }
+    .arrow-down {
+      text-align: center;
+      color: #00aa44;
+      font-size: 18px;
+      margin: -6px 0;
+    }
+    .footer {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #005522;
+      padding-top: 12px;
+      font-size: 12px;
+      color: #668877;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">GHOST.OS // HIGH-CONTRAST SYSTEM ARCHITECTURE</div>
+      <div class="sub">REAL-TIME INERTIAL TELEMETRY, DETERMINISTIC ANOMALY DETECTION &amp; FORENSIC AI INTERROGATION</div>
+    </div>
+    <div class="badge-bar">
+      <span class="badge badge-cyan">PROTOCOL: ghost.v1 (10 Hz)</span>
+      <span class="badge badge-amber">BUFFER: 200-FRAME ROLLING FIFO</span>
+      <span class="badge badge-purple">LOCAL AIR-GAPPED AI</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- COL 1: DUAL SIGNAL INGESTION -->
+    <div class="col">
+      <div class="card card-hw">
+        <div class="card-title">1A. PHYSICAL HARDWARE</div>
+        <div class="card-content">
+          <strong>ESP32-WROOM-32</strong> @ 240MHz<br>
+          • <strong>MPU6050 6-DOF IMU</strong> (I²C 400kHz)<br>
+          • SDA: GPIO 21 | SCL: GPIO 22<br>
+          • FreeRTOS 10 Hz Non-blocking Task<br>
+          • GPIO 4 Non-blocking Status LED<br>
+          • Hardware WHO_AM_I @ 0x68<br>
+          <div style="margin-top: 8px;">
+            <span class="tag">Xtensa Dual-Core</span>
+            <span class="tag">PlatformIO</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-sim">
+        <div class="card-title">1B. MATHEMATICAL SIMULATOR</div>
+        <div class="card-content">
+          <strong>Deterministic Fallback &amp; CI/CD</strong><br>
+          • 7 Anomaly Injection Scenarios:<br>
+          &nbsp;&nbsp;1. Free Fall Drop (|A| &lt; 0.2g)<br>
+          &nbsp;&nbsp;2. High-G Impact (&gt; 25 m/s²)<br>
+          &nbsp;&nbsp;3. Inverted Orientation (Az &lt; 0)<br>
+          &nbsp;&nbsp;4. Sensor Freeze (Var = 0)<br>
+          &nbsp;&nbsp;5. I²C Bus Disconnect<br>
+          &nbsp;&nbsp;6. Violent Oscillation (&gt; 300°/s)<br>
+          &nbsp;&nbsp;7. Gyroscope Zero-Rate Drift<br>
+          <div style="margin-top: 8px;">
+            <span class="tag">Zero Hardware Req</span>
+            <span class="tag">Bit-for-Bit Repro</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 2: PROTOCOL & TRANSPORT -->
+    <div class="col">
+      <div class="card card-trans">
+        <div class="card-title">2. SERIAL TRANSPORT</div>
+        <div class="card-content">
+          <strong>pySerial Link Manager</strong><br>
+          • Baud: 115200 bps (Standard)<br>
+          • High-Speed: 460800 / 921600<br>
+          • Auto-Reconnect Exponential Backoff<br>
+          • Framing &amp; Noise Rejection
+        </div>
+      </div>
+      <div class="arrow-down">▼</div>
+      <div class="card card-trans">
+        <div class="card-title">3. PROTOCOL PARSER</div>
+        <div class="card-content">
+          <strong>Protocol: ghost.v1</strong><br>
+          • JSON Lines Streaming Format<br>
+          • Pydantic Strict Schema Validation<br>
+          • Kinematic Ranges: Ax, Ay, Az (m/s²)<br>
+          • Angular Rates: Gx, Gy, Gz (°/s)<br>
+          • Microsecond Sequence Gap Tracking<br>
+          • Temperature &amp; Hardware Error Flags
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 3: TELEMETRY ENGINE & ANOMALY DETECTOR -->
+    <div class="col">
+      <div class="card card-core">
+        <div class="card-title">4. TELEMETRY BROADCASTER</div>
+        <div class="card-content">
+          <strong>Fast In-Memory Engine</strong><br>
+          • Circular Rolling Buffer (500 frames)<br>
+          • WebSocket 10 Hz Real-Time Dispatch<br>
+          • Multi-Client Broadcast State Machine<br>
+          • Dynamic Port Auto-Detection
+        </div>
+      </div>
+      <div class="arrow-down">▼</div>
+      <div class="card card-fault">
+        <div class="card-title">5. DETERMINISTIC DETECTOR</div>
+        <div class="card-content">
+          <strong>Sliding-Window Physics Rules</strong><br>
+          • Sub-100µs In-Line Evaluation<br>
+          • Zero LLM in Safety Critical Loop<br>
+          • Multi-Frame Temporal Persistence<br>
+          • Hysteresis Fault De-bouncing<br>
+          • Instantaneous Audio-Visual Alerts
+        </div>
+      </div>
+      <div class="arrow-down">▼</div>
+      <div class="card card-core">
+        <div class="card-title">6. GHOST TRACE FORENSICS</div>
+        <div class="card-content">
+          <strong>200-Frame Circular Ring Buffer</strong><br>
+          • Locks 20s of Pre-Fault Evidence<br>
+          • Pre-Trigger Kinematic Trajectory<br>
+          • Post-Mortem Onset Synchronization<br>
+          • Frozen Evidence Bundle Generation
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 4: AIR-GAPPED FORENSIC AI -->
+    <div class="col">
+      <div class="card card-ai">
+        <div class="card-title">7. FORENSIC AI INTERROGATOR</div>
+        <div class="card-content">
+          <strong>Provider Abstraction Architecture</strong><br>
+          • Analyzes Frozen Ghost Trace Bundle<br>
+          • 100% Air-Gapped &amp; Local Execution<br>
+          • Zero Cloud Dependency
+        </div>
+      </div>
+      <div class="arrow-down">▼</div>
+      <div class="card card-ai">
+        <div class="card-title">8. EVIDENCE SYNTHESIS</div>
+        <div class="card-content">
+          <strong>Primary: Local Ollama LLM</strong><br>
+          • Model: llama3.2:1b (Port 11434)<br>
+          • Strict JSON Structured Extraction<br><br>
+          <strong>Fallback: Deterministic Rule Engine</strong><br>
+          • Sub-5ms Forensic Rule Evaluator<br>
+          • 100% Offline Always-Available<br>
+          • Mandatory Numerical Citations
+        </div>
+      </div>
+      <div class="arrow-down">▼</div>
+      <div class="card card-ai">
+        <div class="card-title">9. FORENSIC REPORT</div>
+        <div class="card-content">
+          <strong>Structured Forensic Dossier</strong><br>
+          1. <strong>Physical Facts &amp; Citations</strong> (exact G values)<br>
+          2. <strong>Ranked Hypotheses</strong> with Confidence %<br>
+          3. <strong>Prescribed Bench Tests</strong> for Technicians
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 5: DIGITAL AFTERLIFE & CRT UI -->
+    <div class="col">
+      <div class="card card-hw">
+        <div class="card-title">10. DIGITAL AFTERLIFE</div>
+        <div class="card-content">
+          <strong>Persistent Session Storage</strong><br>
+          • Session Recorder (.jsonl to disk)<br>
+          • Replay Engine (0.5x – 4.0x Speeds)<br>
+          • Single-Frame Stepping &amp; Pause<br>
+          • Complete Black-Box Flight Replay
+        </div>
+      </div>
+      <div class="arrow-down">▼</div>
+      <div class="card card-ui">
+        <div class="card-title">11. SCADA RETRO UI</div>
+        <div class="card-content">
+          <strong>Three-Stage Experience</strong><br>
+          • <strong>Stage 1: Ghost Gate</strong><br>
+          &nbsp;&nbsp;Procedural 3D Holographic Skull<br>
+          • <strong>Stage 2: Hardware Awakening</strong><br>
+          &nbsp;&nbsp;3D ESP32 + MPU6050 + I²C Signal Pulses<br>
+          • <strong>Stage 3: Command Center</strong><br>
+          &nbsp;&nbsp;Dual Canvas Oscilloscopes (10 Hz)<br>
+          &nbsp;&nbsp;Ghost Trace Forensic Matrix<br>
+          &nbsp;&nbsp;AI Interrogation Dossier Viewer
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>GHOST.OS &bull; HACKTOBERFEST WEEK 4 ("GHOST IN THE MACHINE") &bull; DEBASHIS MOHAPATRA</span>
+    <span>AIR-GAPPED EMBEDDED KINEMATIC FORENSIC PLATFORM &bull; MIT LICENSE</span>
+  </div>
+</body>
+</html>
