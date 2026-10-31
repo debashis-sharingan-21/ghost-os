@@ -1,45 +1,102 @@
 # GHOST.OS — The Machine Remembers
-### Real-Time ESP32 Telemetry, Deterministic Anomaly Detection & Forensic AI
 
-> **"Every machine leaves a last transmission. GHOST.OS reconstructs what happened."**
+**Real-Time ESP32 Telemetry · Deterministic Anomaly Detection · Embedded Forensics**
+
+> *"Every machine leaves a last transmission. GHOST.OS remembers."*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python: 3.13](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%7C%20WebSockets-009688.svg)](https://fastapi.tiangolo.com/)
-[![Three.js](https://img.shields.io/badge/3D-Three.js%20(Offline%20Bundled)-black.svg)](https://threejs.org/)
-[![Hardware Target](https://img.shields.io/badge/Target-ESP32--WROOM--32%20%2B%20MPU6050-red.svg)](docs/HARDWARE.md)
+[![Three.js](https://img.shields.io/badge/3D-Three.js%20(Air--Gapped%20Bundled)-black.svg)](https://threejs.org/)
+[![Hardware Target](https://img.shields.io/badge/Hardware-ESP32--WROOM--32%20%2B%20MPU6050-red.svg)](docs/HARDWARE.md)
 [![Protocol](https://img.shields.io/badge/Protocol-ghost.v1%20JSONL-orange.svg)](docs/PROTOCOL.md)
 [![Tests: 34 Passed](https://img.shields.io/badge/Tests-34%20Passing-brightgreen.svg)](tests/)
 [![Hacktoberfest Challenge](https://img.shields.io/badge/Hacktoberfest-Week%204%20%22Ghost%20in%20the%20Machine%22-purple.svg)](https://hacktoberfest.com/)
 
 ---
 
-## 1. Cinematic Introduction & Hero View
+## Project Resources & Demonstration Links
 
-When an autonomous rover tumbles down an embankment, a drone drops from the sky, or a robotic joint freezes on a factory floor, ordinary loggers crash or write corrupt partial buffers. The physical state leading up to the impact is permanently lost.
-
-**GHOST.OS** is a specialized real-time embedded instrumentation and post-mortem forensic platform. Built around the **ESP32-WROOM-32** dual-core microcontroller and the **MPU6050 6-DOF IMU**, GHOST.OS captures high-rate inertial kinematics, detects physical anomalies using deterministic sliding-window rules, locks a **200-frame circular pre-fault evidence ring buffer (Ghost Trace)**, and synthesizes evidence-grounded hypotheses using **local open-weight AI** — entirely offline and air-gapped.
-
-![GHOST.OS Command Center](docs/assets/screenshots/command_center.png)
-
----
-
-## 2. The Problem: Why the Machine's Last Transmission Matters
-
-In edge computing and embedded robotics:
-1. **The Black Box Fallacy**: Traditional diagnostics require high-bandwidth cloud uplinks. When power sags, logic crashes, or radio links drop, cloud telemetries truncate right before the most critical frames.
-2. **Hallucination Risk in Physical Safety**: Generic LLMs applied to raw sensor data frequently hallucinate physically impossible explanations (e.g. diagnosing gravity failure instead of harness disconnection).
-3. **Hardware Scarcity in Distributed Teams**: Embedded software developers frequently work without physical prototype boards at their desks, stalling firmware validation.
-
-### How GHOST.OS Solves This:
-* **Separation of Safety & Interpretation**: Deterministic safety rules detect breaches in real time ($\le 100\,\mu\text{s}$ latency). The AI layer **never** controls GPIO, overrides interlocks, or actuates hardware. It functions purely as an advisory forensic investigator analyzing frozen empirical evidence.
-* **Pre-Fault Ring Buffer (Ghost Trace)**: Rather than logging only after a failure occurs, GHOST.OS maintains a continuous 200-frame rolling FIFO buffer in RAM, locking the 20 seconds of physics preceding the onset of any fault.
-* **Bit-for-Bit Deterministic Simulator**: Seven mathematical anomaly injection scenarios enable complete automated CI/CD validation without requiring physical hardware.
-* **Digital Afterlife Replay**: Records full sessions to newline-delimited JSON (`.jsonl`) and streams them back through the live oscilloscope engine at variable speeds ($0.5\times$ to $4.0\times$).
+| Resource | Access Link | Description | Verification Status |
+| :--- | :--- | :--- | :---: |
+| **Published DEV Article** | [Hacktoberfest Week 4 Submission on DEV.to](https://dev.to/debashissharingan21/ghostos-the-machine-remembers-giving-embedded-systems-a-forensic-memory-32g5) | Full technical breakdown for Hacktoberfest Week 4 ("Ghost in the Machine") | **Published** |
+| **Working Prototype Video** | [Watch Demonstration on YouTube](https://youtu.be/0Xl_to4LccA) | Live bench demonstration of ESP32 bring-up, 3D awakening, and telemetry | **Live** |
+| **GitHub Repository** | [github.com/debashis-sharingan-21/ghost-os](https://github.com/debashis-sharingan-21/ghost-os) | Source code, firmware, tests, and documentation | **Active** |
+| **Physical Hardware Guide** | [`docs/HARDWARE.md`](docs/HARDWARE.md) | Wiring pinout, electrical precautions, bring-up checklist, and calibration | **Verified** |
+| **Telemetry Protocol Spec** | [`docs/PROTOCOL.md`](docs/PROTOCOL.md) | Full `ghost.v1` JSON Lines schema specification and data models | **Verified** |
+| **DEV Image Placement Guide** | [`docs/DEV_IMAGE_GUIDE.md`](docs/DEV_IMAGE_GUIDE.md) | Complete mapping of high-resolution viewport assets to article sections | **Complete** |
+| **License** | [MIT License](LICENSE) | Permissive open-source license | **Verified** |
+| **GitHub Pages Showcase** | *Pending Static Deployment* | Standalone WebGL interface (`https://debashis-sharingan-21.github.io/ghost-os/`) | *Awaiting Deployment (HTTP 404)* |
 
 ---
 
-## 3. High-Contrast System Architecture Workflow
+## 1. Project Introduction
+
+When an autonomous rover tumbles down an embankment, a drone drops from the sky, or a robotic actuator locks up on a factory floor, traditional edge loggers either crash, brown out, or write corrupt partial buffers. The physical state leading up to the impact is permanently lost.
+
+**GHOST.OS** is a specialized real-time embedded instrumentation and post-mortem forensic platform. Built around the **ESP32-WROOM-32** dual-core microcontroller and the **MPU6050 6-DOF IMU**, GHOST.OS bridges physical hardware and air-gapped forensic intelligence:
+
+* **High-Rate Kinematics**: Continuously samples 6-DOF linear acceleration and angular velocity over 400 kHz Fast-Mode I²C, transmitting structured `ghost.v1` JSON Lines at 10 Hz over USB serial.
+* **Ghost Trace Pre-Fault Buffer**: Maintains a continuous rolling **200-frame circular ring buffer in RAM**, freezing the 20 seconds of physical kinematics that preceded the onset of any fault.
+* **Event-Driven 3D Ghost Awakening**: An air-gapped Three.js procedural WebGL skull that remains dormant during nominal baseline and dynamically surges forward with scanline glitch effects upon genuine physical anomalies.
+* **Local-First Forensic Reasoning**: Translates frozen kinematic telemetry into ranked failure hypotheses and bench tests without cloud dependence, using a deterministic forensic reasoning engine and an optional local Ollama LLM provider.
+* **Digital Afterlife Flight Recorder**: Records sessions to newline-delimited JSON (`.jsonl`) and streams them back through the live oscilloscope engine at variable speeds ($0.5\times$ to $4.0\times$).
+
+---
+
+## 2. Visual Project Gallery
+
+All images below are genuine viewport captures generated directly from the running GHOST.OS application or verified bench hardware.
+
+### Stage 1: Ghost Gate (Holographic Procedural 3D Skull)
+![Stage 1: Ghost Gate](docs/assets/proof-of-work/01-ghost-gate.png)
+*Figure 1: Full-screen retro CRT terminal featuring a procedural 3D WebGL skull with breathing eye-socket point lights and scanline overlay, rendered entirely offline with bundled Three.js.*
+
+---
+
+### Stage 2: Hardware Awakening (3D Embedded Silicon Wireframe)
+![Stage 2: Hardware Awakening](docs/assets/proof-of-work/02-hardware-awakening.png)
+*Figure 2: 3D hardware assembly model of the ESP32-WROOM-32 and GY-521 MPU6050 breakout with animated dual-trace I²C signal pulses (SDA Electric Cyan on GPIO 21, SCL Amber Gold on GPIO 22).*
+
+---
+
+### Stage 3: Command Center (SCADA Dashboard & Kinematic Oscilloscopes)
+![Stage 3: Command Center](docs/assets/proof-of-work/03-command-center.png)
+*Figure 3: High-performance dual multi-trace HTML5 canvas oscilloscopes streaming real-time accelerometer and gyroscope kinematics at 10 Hz alongside live anomaly controls.*
+
+---
+
+### Stage 4: Physical Hardware Telemetry (ESP32-WROOM-32 + MPU6050 on COM9)
+![Physical Hardware Telemetry](docs/assets/proof-of-work/09-physical-hardware-telemetry.png)
+*Figure 4: First physical ESP32-to-GHOST.OS transmission — MPU6050 measurements received through USB serial with simulator mode disabled.*
+
+---
+
+### Ghost Trace Forensics (200-Frame Circular Pre-Fault Buffer)
+![Ghost Trace Forensics](docs/assets/proof-of-work/05-ghost-trace.png)
+*Figure 5: Ghost Trace circular buffer locking 200 frames of pre-fault kinematics preceding simulated zero-g onset, displaying minimum acceleration (0.01 m/s²) and full trajectory.*
+
+---
+
+### Event-Driven Ghost Awakening (Anomaly Reaction State Machine)
+![Ghost Awakening Reaction](docs/assets/proof-of-work/06-ghost-awakening.png)
+*Figure 6: Dynamic 3D skull awakening reacting to an anomaly event with perspective surge, red CRT glitch burst, and HUD narrative alert.*
+
+---
+
+### Offline Forensic AI Diagnostic Dossier (Deterministic Rule Reasoner)
+![Forensic AI Report](docs/assets/proof-of-work/07-forensic-report.png)
+*Figure 7: Air-gapped post-mortem forensic diagnostic report generated in under 5ms by the DeterministicForensicEngine fallback, displaying empirical citations and ranked physical hypotheses.*
+
+---
+
+### Digital Afterlife (Black-Box JSONL Flight Recording & Playback HUD)
+![Digital Afterlife Replayer](docs/assets/proof-of-work/08-digital-afterlife.png)
+*Figure 8: Digital Afterlife flight recorder playing back historical telemetry from a `.jsonl` session archive through the live oscilloscope engine.*
+
+---
+
+## 3. System Architecture Overview
 
 ```mermaid
 flowchart TD
@@ -54,24 +111,24 @@ flowchart TD
     classDef uiStyle fill:#021e10,stroke:#00ff66,stroke-width:2px,color:#e0ffe8;
 
     subgraph PHYSICAL_TIER ["1. EMBEDDED HARDWARE TIER"]
-        HW["ESP32-WROOM-32 + MPU6050<br/>• 240MHz Xtensa Dual-Core<br/>• 6-DOF IMU (I²C 400kHz Fast-Mode)<br/>• Non-blocking 10 Hz FreeRTOS Task"]:::hwStyle
+        HW["ESP32-WROOM-32 + MPU6050<br/>• 240MHz Xtensa Dual-Core<br/>• 6-DOF IMU (I²C 400kHz Fast-Mode)<br/>• Non-blocking 10 Hz Telemetry Task"]:::hwStyle
     end
 
-    subgraph TRANSPORT_TIER ["2. SERIAL ACQUISITION & PROTOCOL"]
+    subgraph TRANSPORT_TIER ["2. DUAL INGESTION & PROTOCOL"]
         SERIAL["pySerial Link Manager<br/>• Auto-Reconnect Backoff<br/>• 115200 bps USB UART"]:::transportStyle
         PARSER["Protocol Parser (ghost.v1)<br/>• Pydantic Schema Validation<br/>• Boot Noise Rejection<br/>• Sequence Gap Tracking"]:::transportStyle
-        SIM["Deterministic Simulator<br/>• Zero-Hardware Benchmark<br/>• 7 Anomaly Injection Scenarios"]:::streamStyle
+        SIM["Deterministic Simulator<br/>• Zero-Hardware Benchmark<br/>• 7 Mathematical Anomaly Scenarios"]:::streamStyle
     end
 
     subgraph CORE_TIER ["3. TELEMETRY CORE & ANOMALY ENGINE"]
-        ENGINE["Telemetry Broadcast Engine (10 Hz)<br/>• Fast In-Memory Ring Buffer (500 frames)<br/>• WebSocket Telemetry Dispatch"]:::streamStyle
+        ENGINE["Telemetry Broadcast Engine (10 Hz)<br/>• Fast In-Memory Buffer (500 frames)<br/>• WebSocket Telemetry Dispatch"]:::streamStyle
         DETECTOR["Deterministic Anomaly Detector<br/>• Sliding-Window Persistence Rules<br/>• Hysteresis Fault Recovery"]:::faultStyle
         TRACE["Ghost Trace Forensic Buffer<br/>• 200-Frame Circular Ring Buffer<br/>• Pre-Fault Trajectory Snapshot"]:::traceStyle
     end
 
     subgraph AI_TIER ["4. FORENSIC AI INTERROGATION (LOCAL & AIR-GAPPED)"]
         INTERROGATOR["Forensic Interrogator<br/>Provider Abstraction Layer"]:::aiStyle
-        OLLAMA["Local LLM via Ollama<br/>(llama3.2:1b on localhost:11434)<br/>Evidence-Grounded Synthesis"]:::aiStyle
+        OLLAMA["Local Ollama LLM (Optional)<br/>(llama3.2:1b on localhost:11434)<br/>Evidence-Grounded Synthesis"]:::aiStyle
         FALLBACK["Deterministic Forensic Engine<br/>(100% Offline Rule Reasoner)<br/>Sub-5ms Numerical Citations"]:::traceStyle
         DIAGNOSIS["Forensic Diagnostic Report<br/>1. Physical Facts & Citations<br/>2. Ranked Hypotheses & Confidence<br/>3. Actionable Bench Tests"]:::traceStyle
     end
@@ -90,15 +147,15 @@ flowchart TD
     %% Workflow Connections
     HW -->|USB UART Stream| SERIAL
     SERIAL -->|Raw JSONL Lines| PARSER
+    PARSER -->|Physical Telemetry| ENGINE
     SIM -.->|Virtual Fallback Link| ENGINE
-    PARSER --> ENGINE
     ENGINE --> DETECTOR
     ENGINE -->|Live Stream| RECORDER
     DETECTOR -->|Fault Trigger & Evidence| TRACE
     TRACE -->|Pre-Fault Evidence Bundle| INTERROGATOR
-    INTERROGATOR -->|Primary Provider| OLLAMA
-    INTERROGATOR -.->|Offline Fallback| FALLBACK
-    OLLAMA --> DIAGNOSIS
+    INTERROGATOR -.->|Primary Provider (Optional)| OLLAMA
+    INTERROGATOR -->|Offline Fallback (Active)| FALLBACK
+    OLLAMA -.-> DIAGNOSIS
     FALLBACK --> DIAGNOSIS
     ENGINE -->|WebSocket Broadcast| CENTER
     DIAGNOSIS -->|Structured Forensics| CENTER
@@ -108,9 +165,7 @@ flowchart TD
     AWAKEN -->|Boot Audit Complete| CENTER
 ```
 
----
-
-## 4. The Ghost Trace Forensic Lifecycle
+### The Ghost Trace Forensic Lifecycle
 
 ```mermaid
 flowchart LR
@@ -132,132 +187,174 @@ flowchart LR
 
 ---
 
-## 5. Visual Tour of Major Interfaces
+## 4. Physical Hardware Bring-Up & Empirical Verification
 
-````carousel
-![GHOST.OS Command Center](docs/assets/screenshots/command_center.png)
-<!-- slide -->
-![GHOST.OS 3D Ghost Gate](docs/assets/screenshots/ghost_gate.png)
-````
+GHOST.OS maintains an empirical audit trail distinguishing between simulator benchmarks and empirical hardware testing on the physical ESP32 and MPU6050.
 
-1. **GHOST GATE (Stage 1)**: Full-screen CRT terminal with a procedural 3D WebGL holographic skull, living point-light eye pupils that blink and track cursor movements, laser scanning sweep, and keyboard shortcuts (`Esc` to bypass, any key or click to awaken).
-2. **HARDWARE AWAKENING (Stage 2)**: 3D technical scene featuring an ESP32-WROOM-32 board, MPU6050 sensor, and traveling electrical energy pulses along the **SDA (Electric Cyan, GPIO 21)** and **SCL (Amber Gold, GPIO 22)** lines. Includes a real-time boot audit probing host COM ports.
-3. **COMMAND CENTER (Stage 3)**:
-   * **Live Oscilloscopes**: High-performance dual HTML5 canvas scopes with dynamic auto-scaling, in-canvas HUD readouts, and zero-axis reference guides.
-   * **Device Link**: Non-blocking pySerial controller with port scanner and baud selector.
-   * **System Health**: Digital telemetry cards displaying FreeRTOS free heap, supply rail voltage ($V_{cc}$), die temperature, and uptime.
-   * **Anomaly Injection Matrix**: Interactive scenario controls for zero-G drops, kinetic impacts, tumble spins, sensor lockups, thermal runaway, and brownouts.
-   * **Ghost Trace Forensics**: Anomaly event timeline with rolling pre-fault evidence inspection and statistical summaries.
-   * **AI Interrogation Viewer**: Evidence-grounded physical observations, ranked hypotheses with confidence percentages, and recommended bench tests.
-   * **Digital Afterlife Replayer**: Timestamped session recording and variable-speed playback.
+### Verified Hardware Bring-Up Parameters
 
----
-
-## 6. Open-Weight AI & Offline Philosophy
-
-GHOST.OS is designed to operate in extreme, zero-connectivity environments:
-
-| Feature | Local Ollama LLM (`llama3.2:1b`) | Deterministic Forensic Engine (Fallback) |
+| Parameter | Verified Physical Result | Verification Evidence |
 | :--- | :--- | :--- |
-| **Connectivity** | 100% Offline (`localhost:11434`) | 100% Offline (Embedded Python) |
-| **Inference Latency** | ~400 ms – 1200 ms | < 5 ms |
-| **Model Size** | ~1.3 GB RAM / VRAM | 0 MB weights (Pure mathematical rules) |
-| **Hardware Reqs** | Modern CPU or GPU | Any system running Python 3.10+ |
-| **Output Type** | Natural language synthesis with citations | Structured numerical citations and bench tests |
-| **Failure Safety** | Probed via `GET /api/tags` | Autonomous instant fallback if Ollama closed |
+| **Microcontroller** | ESP32-WROOM-32 DevKit (240 MHz Xtensa LX6 Dual-Core) | Hardware serial boot banner (`ESP32-GHOST-HW01`) |
+| **USB Serial Port** | `COM9` | Windows PnP: `Silicon Labs CP210x USB to UART Bridge (COM9)` |
+| **USB Bridge Chip** | Silicon Labs CP2102 (`VID:PID 10C4:EA60`) | Serial baud: 115200 bps |
+| **Firmware Platform** | PlatformIO Core / Arduino framework for ESP32 | `pio run -d firmware -e esp32dev` |
+| **Firmware Compilation** | **[SUCCESS]** | `firmware/.pio/build/esp32dev/firmware.bin` (297 KB) |
+| **Firmware Upload** | **[SUCCESS]** | `esptool.py` to COM9 @ 460800 baud (Chip ID: `ESP32-D0WD-V3`) |
+| **MPU6050 I²C Address** | `0x68` (Confirmed via `WHO_AM_I` register `0x75`) | Boot banner: `{"proto":"ghost.v1","status":"ONLINE"}` |
+| **I²C Wiring** | **SDA: GPIO 21** / **SCL: GPIO 22** | 400 kHz Fast-Mode I²C communication verified |
+| **Sensor Calibration** | Completed (150 baseline bias samples) | `flags.calibrated: true` |
+| **Stationary Gravity** | $A_z \approx 9.78 - 9.85\text{ m/s}^2$ ($|A| \approx 9.85\text{ m/s}^2$) | Resting flat desk gravity vector verified |
+| **Target Telemetry Rate** | 10.0 Hz (`loop_hz: 10.0`) | pySerial continuous stream ingestion verified |
+| **Die Temperature** | $30.7^\circ\text{C} - 31.2^\circ\text{C}$ | Physical on-die thermal sensor reading |
+| **Backend Ingestion Mode** | `HARDWARE_SERIAL` | `POST /api/serial/connect` $\rightarrow$ `is_hardware_connected: true` |
+| **Telemetry Provenance** | `simulated: false` | Broadcast over WebSockets to live Command Center |
 
-### Transparent Attribution Policy
-The UI explicitly identifies the operational runtime (`PROVIDER: Ollama` vs `PROVIDER: DeterministicForensicEngine`). GHOST.OS **never** falsely labels deterministic output as LLM-generated.
+**Screenshot Proof**: [`docs/assets/proof-of-work/09-physical-hardware-telemetry.png`](docs/assets/proof-of-work/09-physical-hardware-telemetry.png) demonstrates the live Command Center running with physical hardware connected on COM9.
+
+### Runtime Telemetry Path
+1. **ESP32 Firmware**: Reads the MPU6050 over 400 kHz I²C, samples kinematics, formats a `ghost.v1` JSON Line, and emits it over USB serial at 115200 baud.
+2. **Python Backend**: The `SerialManager` background reader reads lines via pySerial, parses and validates schemas with Pydantic, evaluates deterministic anomaly rules, and buffers frames.
+3. **WebSockets & UI**: Frames are broadcast at 10 Hz over WebSockets (`/ws/telemetry`) to the browser, driving the live canvas oscilloscopes and 3D scenes.
+
+### Indicator Verification Status Distinction
+* **Physically Bench-Verified**: The external green LED on **GPIO 4** was physically bench-verified running the non-blocking heartbeat state machine (100ms ON / 900ms OFF).
+* **Compiled / Pending Bench Upload**: An expanded multi-indicator firmware revision was implemented and verified to compile successfully (`[SUCCESS]`), adding:
+  - External LED on **GPIO 4**
+  - Configurable built-in LED on **GPIO 2**
+  - Audio buzzer on **GPIO 25** (with active/passive driver modes and strict LOW idle state)
+  *Note: At the time of this publication, this indicator expansion has been verified through PlatformIO compilation, but has not yet been physically uploaded to the bench breadboard.*
 
 ---
 
-## 7. Technology Stack
+## 5. Local-First AI & Forensic Reasoning Architecture
+
+GHOST.OS enforces a strict separation between deterministic safety rules and advisory AI reasoning. Safety detection operates at sub-100µs deterministic latency; AI models never control GPIO or actuate hardware.
+
+```
++-------------------------------------------------------------------------+
+|                  GHOST TRACE PRE-FAULT EVIDENCE BUNDLE                  |
+|  - Anomaly Rule: EVT-831-HIGH_G_IMPACT (Severity: CRITICAL)             |
+|  - Empirical Trajectory: 200 frames preceding fault (20 seconds)        |
+|  - Numerical Citations: Peak Az = 38.4 m/s², Onset Frame #184           |
++------------------------------------+------------------------------------+
+                                     |
+                                     v
+                 +---------------------------------------+
+                 |    ForensicInterrogator Abstraction   |
+                 +-------------------+-------------------+
+                                     |
+             +-----------------------+-----------------------+
+             |                                               |
+             v                                               v
++-------------------------+                     +-------------------------+
+|   Local Ollama Provider |                     |  Deterministic Forensic |
+|   (Optional LLM Tier)   |                     |     Engine (Fallback)   |
+|                         |                     |                         |
+| • Model: llama3.2:1b    |                     | • 100% Offline Python   |
+| • Endpoint: :11434      |                     | • 0 MB model weights    |
+| • Natural language      |                     | • Sub-5ms execution     |
+|   synthesis             |                     | • Numerical citations   |
+| • Status: UNVERIFIED    |                     | • Status: VERIFIED      |
++-------------------------+                     +-------------------------+
+```
+
+### Transparent Provider Explanation
+1. **Ollama Provider (Optional Local LLM)**:
+   - Designed to run an open-weight model (`llama3.2:1b`) locally on `http://127.0.0.1:11434/api/generate`.
+   - Formulates evidence-grounded hypotheses from structured Ghost Trace JSON prompts.
+   - **Verification Status**: *Unverified*. A live end-to-end Ollama inference run has not yet been independently demonstrated on this system.
+2. **Deterministic Forensic Engine (Autonomous Offline Fallback)**:
+   - Operates independently inside the Python core with zero external dependencies.
+   - Evaluates kinetic conservation laws, axis correlations, and register health to generate structured diagnostic reports in under 5ms.
+   - **Verification Status**: *Verified*. Tested through automated test suites (`tests/test_ai_interrogator.py`) and proven during simulator and bench sessions.
+   - *All AI screenshots shown in this repository represent this verified offline fallback engine.*
+
+---
+
+## 6. Technology Stack
 
 * **Embedded Hardware**: ESP32-WROOM-32 (240 MHz Xtensa LX6 Dual-Core), MPU-6050 6-DOF IMU (I²C 400 kHz Fast-Mode).
-* **Firmware**: PlatformIO, Arduino C++, FreeRTOS, ArduinoJson.
+* **Firmware**: PlatformIO Core, Arduino C++, FreeRTOS, ArduinoJson, ElectronicCats MPU6050 driver.
 * **Backend Core**: Python 3.13, FastAPI, Uvicorn, WebSockets, Pydantic v2, pySerial.
 * **Frontend Engine**: Vanilla ES6, HTML5 Canvas 2D Oscilloscopes, Three.js r128 (locally bundled, 0 external CDN calls).
-* **AI Provider Stack**: Ollama HTTP Client (`llama3.2:1b`), internal deterministic forensic reasoner.
-* **Testing & CI**: Pytest, Pytest-Asyncio, HTTPX.
+* **Diagnostic Tier**: DeterministicForensicEngine (offline rules), optional Ollama client interface.
+* **Testing & Quality**: Pytest, Pytest-Asyncio, HTTPX, Chrome DevTools Protocol (CDP).
 
 ---
 
-## 8. Quickstart & Installation
+## 7. Installation & Quickstart
 
 ### Prerequisites
 * Python 3.10+ (tested on Python 3.13)
 * Windows, Linux, or macOS
 
-### Step 1: Clone and Set Up Environment
-```bash
+### Option A: Windows (PowerShell)
+
+```powershell
+# 1. Clone repository
 git clone https://github.com/debashis-sharingan-21/ghost-os.git
 cd ghost-os
 
+# 2. Create and activate virtual environment
 python -m venv .venv
-# On Windows:
-.\.venv\Scripts\activate
-# On Linux/macOS:
-source .venv/bin/activate
+.\.venv\Scripts\Activate.ps1
 
+# 3. Install dependencies
 pip install -r requirements.txt
-```
 
-### Step 2: Launch the GHOST.OS Daemon
-```bash
+# 4. Launch the GHOST.OS daemon
 python run_ghost_os.py --host 127.0.0.1 --port 8000
 ```
+
+### Option B: Linux / macOS (Bash)
+
+```bash
+# 1. Clone repository
+git clone https://github.com/debashis-sharingan-21/ghost-os.git
+cd ghost-os
+
+# 2. Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Launch the GHOST.OS daemon
+python run_ghost_os.py --host 127.0.0.1 --port 8000
+```
+
 Open **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)** in any modern web browser.
 
-### Step 3: Run Automated Test Suite
+---
+
+## 8. Simulator Demonstration Guide
+
+To explore GHOST.OS without physical hardware:
+1. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) and click anywhere or press `Space` to awaken the terminal.
+2. In the Command Center, observe the **SIMULATION ACTIVE** badge and nominal gravity ($A_z \approx 9.81\text{ m/s}^2$).
+3. In the **ANOMALY INJECTION MATRIX** on the right, click **FREE FALL DROP**.
+4. Observe the instantaneous drop in total acceleration magnitude ($|A| < 0.2\text{ m/s}^2$) on the oscilloscope, accompanied by an audio-visual CRT fault alert.
+5. Switch to the **GHOST TRACE FORENSICS** tab; select the newly generated `EVT-FREE_FALL` event to inspect its 200-frame pre-fault trajectory.
+6. Click **SUBMIT TO AI INTERROGATOR >>**; review the ranked hypotheses and physical citations generated by the local engine.
+7. Click **RESTORE NOMINAL BASELINE** to return to normal resting state.
+
+---
+
+## 9. Automated Testing & Verification Audit
+
+The test suite covers protocol parsing, anomaly rules, API endpoints, serial management, simulation, and storage.
+
 ```bash
 pytest -v
 ```
-All 34 automated unit and integration tests run in ~7 seconds with zero failures.
 
----
-
-## 9. Simulator Demonstration Guide
-
-To demonstrate GHOST.OS without physical hardware:
-1. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) and press any key to awaken the terminal.
-2. In the Command Center, observe the **SIMULATION ACTIVE** badge and the baseline gravity reading ($A_z \approx 9.81\text{ m/s}^2$).
-3. In the **ANOMALY INJECTION MATRIX** on the right, click **FREE FALL DROP**.
-4. Observe the instantaneous drop in total acceleration magnitude ($|A| < 0.2\text{ m/s}^2$) on the accelerometer oscilloscope, accompanied by an audio-visual CRT fault alert.
-5. Switch to the **GHOST TRACE FORENSICS** tab; click the newly generated `EVT-FREE_FALL` event to review its 20-frame pre-fault trajectory.
-6. Click **SUBMIT TO AI INTERROGATOR >>**; review the ranked hypotheses and physical observations generated by the local engine.
-7. Click **RESTORE NOMINAL BASELINE** to return to resting state.
-
----
-
-## 10. Physical ESP32 Hardware Bring-Up
-
-For physical hardware bring-up, consult the comprehensive guide in **[`docs/HARDWARE.md`](docs/HARDWARE.md)**, which includes a 16-step execution checklist, electrical precautions, and troubleshooting.
-
-### Pinout Summary
-
-| MPU6050 Pin | ESP32 Pin | Function | Notes |
-|:---:|:---:|:---:|:---|
-| **VCC**     | **3V3**   | Power    | Stable 3.3V DC rail |
-| **GND**     | **GND**   | Ground   | Common ground reference |
-| **SCL**     | **GPIO 22**| I2C Clock | 400 kHz Fast-Mode (Amber pulse in 3D scene) |
-| **SDA**     | **GPIO 21**| I2C Data | 400 kHz Fast-Mode (Cyan pulse in 3D scene) |
-| **AD0**     | **GND**   | Address  | Default address `0x68` |
-
-### Compiling & Flashing Firmware
-```bash
-cd firmware
-pio run -e esp32dev
-pio run -e esp32dev -t upload
-```
-
----
-
-## 11. Automated Test Results
-
+### Test Session Results
 ```text
 ============================= test session starts =============================
 platform win32 -- Python 3.13.0, pytest-9.2.0, pluggy-1.7.0
-rootdir: C:\Users\Omen\Downloads\ghost-os
+rootdir: ghost-os
 configfile: pyproject.toml
 testpaths: tests
 collected 34 items
@@ -270,63 +367,38 @@ tests/test_serial_manager.py (4 tests) .......... PASSED [82%]
 tests/test_simulator.py (5 tests) ............... PASSED [97%]
 tests/test_storage.py (1 test) .................. PASSED [100%]
 
-======================== 34 passed, 1 warning in 7.48s ========================
+======================== 34 passed, 1 warning in 8.31s ========================
 ```
 
----
+### Verification Matrix Summary
 
-## 12. Development Log — From Simulator to Physical Machine
-
-As part of the physical bring-up for Hacktoberfest Week 4 ("Ghost in the Machine"), GHOST.OS maintains an empirical, chronological audit trail distinguishing between deterministic simulator benchmarks, software browser testing, and empirical hardware testing on the physical ESP32 and MPU6050.
-
-### Chronological Verification Matrix
-
-| Milestone | Target / Scope | Evidence Type | Timestamp (UTC) | Verification Status | Artifact Reference |
-|---|---|---|---|---|---|
-| **Ghost Gate Holographic UI** | Cinematic 3D procedural WebGL skull, scanlines, and audio trigger | Browser Viewport Screenshot (1902×928) | 2026-10-31 09:46 | **Software Tested** | [`01-ghost-gate.png`](docs/assets/proof-of-work/01-ghost-gate.png) |
-| **Hardware Awakening Sequence** | 3D wireframe ESP32 + MPU6050, animated I²C traces, Silicon audit log | Browser Viewport Screenshot (1902×928) | 2026-10-31 09:46 | **Software Tested** | [`02-hardware-awakening.png`](docs/assets/proof-of-work/02-hardware-awakening.png) |
-| **Command Center Live Terminal** | Real-time dual multi-trace oscilloscopes, telemetry badges, anomaly matrix | Browser Viewport Screenshot (1902×928) | 2026-10-31 09:46 | **Software Tested** | [`03-command-center.png`](docs/assets/proof-of-work/03-command-center.png) |
-| **PlatformIO Core Toolchain & Build** | Xtensa GCC 8.4.0, Arduino core for ESP32, FreeRTOS telemetry task | Compiler Build Log & Binary Check | 2026-10-31 10:20 | **Physically Tested / Build Verified** | `firmware/.pio/build/esp32dev/firmware.bin` (297,264 B) |
-| **ESP32 Firmware Flash** | Serial upload to COM9 (Silicon Labs CP2102 @ 460800 baud) | esptool.py flash output | 2026-10-31 10:25 | **Physically Tested** | `ESP32-D0WD-V3 (rev v3.1), MAC: 1c:c3:ab:c3:d1:f8` |
-| **MPU6050 Hardware Init & WHO_AM_I** | Hardware register read `0x75` (`0x68`), 400kHz Fast-Mode I²C | Serial Boot Stream (115200 baud) | 2026-10-31 10:27 | **Physically Tested** | `{"status":"ONLINE","device_id":"ESP32-GHOST-HW01"}` |
-| **Live Physical Telemetry Stream** | 10 Hz continuous `ghost.v1` JSON Lines over physical USB UART | pySerial Parser Ingestion | 2026-10-31 10:30 | **Physically Tested** | $A_z \approx 9.78-9.84\text{ m/s}^2$, $T \approx 31.2^\circ\text{C}$ |
-| **Hardware-Linked Dashboard** | Live dashboard state with `simulated: false` and physical gravity | UI Badge & Oscilloscope Evidence | 2026-10-31 10:45 | **Physically Tested** | [`09-physical-hardware-telemetry.png`](docs/assets/proof-of-work/09-physical-hardware-telemetry.png) |
-| **Ghost Trace Anomaly Capture** | 200-frame FIFO lock upon physical disturbance | Circular Ring Buffer Dump | 2026-10-31 | **Software Tested** (Simulator verified) | `tests/test_anomaly_detector.py` |
-| **Event-Driven Ghost Awakening** | Skull scale surge, holographic glitch, HUD badge reaction | WebGL State Machine Evidence | 2026-10-31 | **Software Tested** | `ghost_gate_3d.js` |
-| **Forensic AI Interrogation** | Evidence-grounded post-mortem synthesis with numerical citations | Air-gapped Diagnostic Report | 2026-10-31 | **Software Tested** | `tests/test_ai_interrogator.py` |
-| **Digital Afterlife Replay** | Variable-speed `.jsonl` session playback through oscilloscope engine | Replay Engine Log | 2026-10-31 | **Software Tested** | `tests/test_storage.py` |
-
-### Visual Proof-of-Work: Terminal Stages
-
-#### Stage 1: Ghost Gate (Holographic Procedural 3D Skull)
-![Stage 1: Ghost Gate](docs/assets/proof-of-work/01-ghost-gate.png)
-*Captured 2026-10-31 09:46 UTC from running GHOST.OS daemon on port 8000. Procedural WebGL skull with breathing eye-socket point lights and CRT scanline overlay.*
-
-#### Stage 2: Hardware Awakening (3D Embedded Silicon Wireframe)
-![Stage 2: Hardware Awakening](docs/assets/proof-of-work/02-hardware-awakening.png)
-*Captured 2026-10-31 09:46 UTC. Full 3D model of ESP32-WROOM-32 and GY-521 MPU6050 breakout with animated dual-trace I²C signal pulses (SDA GPIO 21 / SCL GPIO 22).*
-
-#### Stage 3: Command Center (SCADA Dashboard & Oscilloscopes)
-![Stage 3: Command Center](docs/assets/proof-of-work/03-command-center.png)
-*Captured 2026-10-31 09:46 UTC. Dual multi-trace HTML5 canvas oscilloscopes streaming real-time telemetry, live anomaly injection panel, and forensic mode selectors.*
-
-#### Stage 4: Physical Hardware Telemetry (ESP32-WROOM-32 + MPU6050 on COM9)
-![Physical Hardware Telemetry](docs/assets/proof-of-work/09-physical-hardware-telemetry.png)
-*Captured 2026-10-31 10:45 UTC. Live streaming from physical ESP32 and MPU6050 hardware on COM9 into GHOST.OS Command Center (`simulated: false`, `device_id: ESP32-GHOST-HW01`, $A_z \approx 9.8\text{ m/s}^2$).*
+| Tier | Scope | Method | Empirical Status |
+| :--- | :--- | :--- | :---: |
+| **Unit & Integration Tests** | 34 automated test cases | Pytest test suite | **VERIFIED** (34/34 passing) |
+| **Simulator Anomaly Suite** | 7 mathematical scenarios | Mathematical injection engine | **VERIFIED** (100% deterministic) |
+| **Physical Hardware Telemetry** | ESP32 + MPU6050 over COM9 | pySerial @ 115200 baud | **VERIFIED** (`simulated: false`, $A_z \approx 9.8\text{ m/s}^2$) |
+| **Status LED Indicator** | GPIO 4 non-blocking heartbeat | Bench oscilloscope / inspection | **VERIFIED** (100ms ON / 900ms OFF) |
+| **Multi-Indicator Expansion** | GPIO 2 onboard LED + GPIO 25 buzzer | PlatformIO compiler | **COMPILED** (Bench upload pending) |
+| **Offline Forensic AI Reasoner** | Numerical evidence & hypothesis engine | Deterministic rule reasoner | **VERIFIED** (Sub-5ms execution) |
+| **Live Ollama Inference** | Local LLM (`llama3.2:1b`) | HTTP client to `:11434` | **UNVERIFIED** (Independent run pending) |
 
 ---
 
-## 13. Known Limitations & Verification Boundaries
+## 10. Known Limitations & Engineering Boundaries
 
-* **Physical Hardware**: Fully brought up and physically verified on bench. ESP32-WROOM-32 DevKit and MPU6050 IMU communicating over Silicon Labs CP2102 on `COM9` at 115200 baud, streaming genuine 10 Hz `ghost.v1` JSON Lines with physical gravity ($A_z \approx 9.8\text{ m/s}^2$) and active GPIO4 heartbeat indicator.
-* **Ollama Live Inference**: Requires host installation of Ollama with `llama3.2:1b`. When Ollama is absent, the deterministic forensic rule engine operates autonomously as the verified offline fallback.
-* **Storage Retention**: By default, in-memory telemetry buffers maintain the most recent 500 frames. Sessions recorded via Digital Afterlife are written permanently to disk as `.jsonl` files in `data/sessions/`.
+* **Buffer Distinctions**:
+  - The **General Telemetry History Buffer** holds the most recent 500 frames in memory for real-time oscilloscope rendering.
+  - The **Ghost Trace Pre-Fault Buffer** is a specialized 200-frame circular ring buffer that freezes upon anomaly onset to capture exactly 20 seconds of pre-fault evidence.
+* **Ollama Live Inference**: Requires host installation of Ollama with the `llama3.2:1b` model. When Ollama is offline or uninstalled, the verified Deterministic Forensic Engine functions autonomously.
+* **Windows COM Port Exclusivity**: Windows COM ports are strictly single-owner. Only one process (the GHOST.OS daemon or a serial monitor) may hold `COM9` open at a time.
+* **Air-Gapped Operation**: The entire web interface, 3D assets, Three.js engine, and forensic reasoning run with zero external internet access.
 
 ---
 
-## 14. Credits, Attribution & License
+## 11. Credits, Attribution & License
 
-* **Core Architecture & Software**: Architected and developed by **Debashis Mohapatra** ([`debashis-sharingan-21`](https://github.com/debashis-sharingan-21)).
+* **Core Architecture & Engineering**: Architected and developed by **Debashis Mohapatra** ([`debashis-sharingan-21`](https://github.com/debashis-sharingan-21)).
+* **Hacktoberfest 2026**: Developed for Hacktoberfest Week 4 ("Ghost in the Machine").
 * **Aesthetic Reference**: Retro-industrial SCADA aesthetic inspired by VECTRON-32 (Copyright &copy; 2026 debashis-sharingan-21, MIT License).
 * **3D Graphics Engine**: Three.js r128 (Copyright &copy; 2010-2026 Three.js authors / Ricardo Cabello, MIT License), locally bundled for air-gapped execution.
 * **License**: MIT License — see [LICENSE](LICENSE) for full legal text.
