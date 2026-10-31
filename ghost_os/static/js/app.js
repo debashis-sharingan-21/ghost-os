@@ -437,8 +437,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.refreshSerialPorts = async () => {
     try {
-      const res = await fetch('/api/serial/ports');
-      const data = await res.json();
+      const [portsRes, statusRes] = await Promise.all([
+        fetch('/api/serial/ports'),
+        fetch('/api/status')
+      ]);
+      const data = await portsRes.json();
+      const status = await statusRes.json();
       serialPortSelect.innerHTML = '<option value="sim">VIRTUAL SIMULATOR (10 Hz)</option>';
       data.ports.forEach(p => {
         const opt = document.createElement('option');
@@ -446,6 +450,11 @@ document.addEventListener('DOMContentLoaded', () => {
         opt.textContent = `${p.port} (${p.description})`;
         serialPortSelect.appendChild(opt);
       });
+      if (status.is_hardware_connected && status.serial_port) {
+        serialPortSelect.value = status.serial_port;
+        btnToggleLink.textContent = 'DISCONNECT';
+        indicatorLink.style.background = 'var(--phosphor-green)';
+      }
       terminal.info(`Scanned COM ports: ${data.ports.length} physical port(s) detected.`);
     } catch (err) {
       terminal.warn(`Failed scanning serial ports: ${err.message}`);

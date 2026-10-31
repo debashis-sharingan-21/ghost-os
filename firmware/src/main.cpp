@@ -8,11 +8,55 @@
 #define TELEMETRY_RATE_HZ 10
 #define TELEMETRY_PERIOD_MS (1000 / TELEMETRY_RATE_HZ)
 
+// Status LED Pin: GPIO 4 is confirmed safe, non-strapping general-purpose output
+#define PIN_STATUS_LED 4
+
 static MPU6050Sensor s_imu(21, 22, 0x68);
 static uint32_t s_seq = 0;
 static const char* DEVICE_ID = "ESP32-GHOST-HW01";
 
+/**
+ * Non-blocking indicator LED state machine (Zero delay, deterministic timing)
+ * - Sensor Disconnected: 3 rapid strobe bursts every 1.2s
+ * - Anomaly Active: Fast warning flash (80ms ON / 80ms OFF)
+ * - Normal Nominal: Calm heartbeat pulse (100ms ON / 900ms OFF)
+ */
+static void updateStatusLed(uint32_t now, bool imu_online, bool anomaly_active, uint16_t error_code) {
+    static uint32_t last_led_toggle = 0;
+    static bool led_state = false;
+    static uint32_t last_burst_cycle = 0;
+
+    if (!imu_online || error_code == 8) {
+        // Sensor disconnected: Distinct fault pattern (3 rapid 60ms strobes every 1200ms)
+        uint32_t cycle_time = now - last_burst_cycle;
+        if (cycle_time < 360) {
+            uint32_t phase = cycle_time % 120;
+            led_state = (phase < 60);
+        } else if (cycle_time >= 1200) {
+            last_burst_cycle = now;
+            led_state = false;
+        } else {
+            led_state = false;
+        }
+    } else if (anomaly_active) {
+        // Warning / Critical anomaly: Fast blink (80ms ON / 80ms OFF)
+        if (now - last_led_toggle >= 80) {
+            led_state = !led_state;
+            last_led_toggle = now;
+        }
+    } else {
+        // Normal baseline: Slow heartbeat blink (100ms ON / 900ms OFF)
+        uint32_t cycle = now % 1000;
+        led_state = (cycle < 100);
+    }
+
+    digitalWrite(PIN_STATUS_LED, led_state ? HIGH : LOW);
+}
+
 void setup() {
+    pinMode(PIN_STATUS_LED, OUTPUT);
+    digitalWrite(PIN_STATUS_LED, LOW);
+
     Serial.begin(115200);
     delay(500);
 
@@ -60,6 +104,9 @@ void loop() {
     health.wifi_rssi = 0;
 
     bool anomaly = !ok || (mpu.error_code != 0);
+
+    // Update non-blocking indicator LED
+    updateStatusLed(now, s_imu.isInitialized(), anomaly, mpu.error_code);
 
     ProtocolEmitter::emitJsonLine(
         Serial,

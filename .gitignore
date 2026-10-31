@@ -221,6 +221,8 @@ __marimo__/
 
 # GHOST.OS Project Specific
 .env
+.pio/
+firmware/.pio/
 data/recordings/
 data/sessions/
 data/logs/

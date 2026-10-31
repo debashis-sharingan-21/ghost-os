@@ -18,6 +18,7 @@ All images are authentic, high-resolution viewport captures ($1902 \times 928$) 
 | **`06-ghost-awakening.png`** | Section 6: *Air-Gapped 3D Visual Experience* (Anomaly Reaction) | **Software Tested** (Simulator Visual Demo) | [`docs/assets/proof-of-work/06-ghost-awakening.png`](assets/proof-of-work/06-ghost-awakening.png) |
 | **`07-forensic-report.png`** | Section 5: *Local Open-Weight AI & The Air-Gapped Philosophy* | **Software Tested** (Deterministic Fallback) | [`docs/assets/proof-of-work/07-forensic-report.png`](assets/proof-of-work/07-forensic-report.png) |
 | **`08-digital-afterlife.png`** | Section 6: *What Was Technically Difficult* (Digital Afterlife) | **Software Tested** (Session Recording/Replay) | [`docs/assets/proof-of-work/08-digital-afterlife.png`](assets/proof-of-work/08-digital-afterlife.png) |
+| **`09-physical-hardware-telemetry.png`** | Section 7: *Physical Hardware Validation & Bring-Up* | **Physically Tested** (ESP32 + MPU6050 on COM9) | [`docs/assets/proof-of-work/09-physical-hardware-telemetry.png`](assets/proof-of-work/09-physical-hardware-telemetry.png) |
 
 ---
 
@@ -112,3 +113,17 @@ All images are authentic, high-resolution viewport captures ($1902 \times 928$) 
   ![Ghost Awakening Anomaly Burst](https://raw.githubusercontent.com/debashis-sharingan-21/ghost-os/main/docs/assets/proof-of-work/06-ghost-awakening.png)
   *Figure 7B: 3D Ghost Awakening event reaction triggering perspective surge, CRT scanline glitch, and HUD narrative alert.*
   ```
+
+---
+
+### 8. Section 7: Physical Hardware Validation & Bring-Up
+* **File**: `docs/assets/proof-of-work/09-physical-hardware-telemetry.png`
+* **Target Section**: Section 7 (*"Physical Hardware Bring-Up & Empirical Validation"*).
+* **Caption**: *"GHOST.OS Command Center streaming live physical telemetry from ESP32-WROOM-32 DevKit and MPU6050 over COM9 @ 115200 baud. Hardware Linked badge active, real 1g earth gravity ($A_z \approx 9.8\text{ m/s}^2$), physical die temperature ($31.2^\circ\text{C}$), and 10 Hz continuous ghost.v1 JSONL carrier."*
+* **Verification Note**: *Empirical physical hardware evidence with `simulated: false`, `device_id: ESP32-GHOST-HW01`.*
+* **Markdown Embed**:
+  ```markdown
+  ![GHOST.OS Physical Hardware Telemetry](https://raw.githubusercontent.com/debashis-sharingan-21/ghost-os/main/docs/assets/proof-of-work/09-physical-hardware-telemetry.png)
+  *Figure 8: Empirical hardware telemetry streaming from physical ESP32 and MPU6050 on COM9 into GHOST.OS Command Center.*
+  ```
+

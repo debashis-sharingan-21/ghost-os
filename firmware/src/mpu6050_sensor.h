@@ -24,6 +24,7 @@ public:
     bool begin();
     bool sample(MPUData& out_data);
     void calibrate(uint16_t samples = 200);
+    bool isInitialized() const { return _initialized; }
 
 private:
     uint8_t _sda;

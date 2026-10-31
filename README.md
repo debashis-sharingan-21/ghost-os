@@ -286,11 +286,11 @@ As part of the physical bring-up for Hacktoberfest Week 4 ("Ghost in the Machine
 | **Ghost Gate Holographic UI** | Cinematic 3D procedural WebGL skull, scanlines, and audio trigger | Browser Viewport Screenshot (1902×928) | 2026-10-31 09:46 | **Software Tested** | [`01-ghost-gate.png`](docs/assets/proof-of-work/01-ghost-gate.png) |
 | **Hardware Awakening Sequence** | 3D wireframe ESP32 + MPU6050, animated I²C traces, Silicon audit log | Browser Viewport Screenshot (1902×928) | 2026-10-31 09:46 | **Software Tested** | [`02-hardware-awakening.png`](docs/assets/proof-of-work/02-hardware-awakening.png) |
 | **Command Center Live Terminal** | Real-time dual multi-trace oscilloscopes, telemetry badges, anomaly matrix | Browser Viewport Screenshot (1902×928) | 2026-10-31 09:46 | **Software Tested** | [`03-command-center.png`](docs/assets/proof-of-work/03-command-center.png) |
-| **PlatformIO Core Toolchain & Build** | Xtensa GCC 8.4.0, Arduino core for ESP32, FreeRTOS telemetry task | Compiler Build Log & Binary Check | 2026-10-31 09:14+ | **In Progress** | `task-1494` (~120 MB / 246 MB downloaded) |
-| **ESP32 Firmware Flash** | Serial upload to COM9 (Silicon Labs CP2102 @ 460800 baud) | esptool.py flash output | Pending Build | **Not Yet Verified** | Authorized on COM9 |
-| **MPU6050 Hardware Init & WHO_AM_I** | Hardware register read `0x75` (`0x68`), 400kHz Fast-Mode I²C | Serial Boot Stream (115200 baud) | Pending Flash | **Not Yet Verified** | Pending Flash |
-| **Live Physical Telemetry Stream** | 10 Hz continuous `ghost.v1` JSON Lines over physical USB UART | pySerial Parser Ingestion | Pending Flash | **Not Yet Verified** | Pending Flash |
-| **Hardware-Linked Dashboard** | Live dashboard state with `simulated: false` and physical gravity | UI Badge & Oscilloscope Evidence | Pending Flash | **Not Yet Verified** | Pending Flash |
+| **PlatformIO Core Toolchain & Build** | Xtensa GCC 8.4.0, Arduino core for ESP32, FreeRTOS telemetry task | Compiler Build Log & Binary Check | 2026-10-31 10:20 | **Physically Tested / Build Verified** | `firmware/.pio/build/esp32dev/firmware.bin` (297,264 B) |
+| **ESP32 Firmware Flash** | Serial upload to COM9 (Silicon Labs CP2102 @ 460800 baud) | esptool.py flash output | 2026-10-31 10:25 | **Physically Tested** | `ESP32-D0WD-V3 (rev v3.1), MAC: 1c:c3:ab:c3:d1:f8` |
+| **MPU6050 Hardware Init & WHO_AM_I** | Hardware register read `0x75` (`0x68`), 400kHz Fast-Mode I²C | Serial Boot Stream (115200 baud) | 2026-10-31 10:27 | **Physically Tested** | `{"status":"ONLINE","device_id":"ESP32-GHOST-HW01"}` |
+| **Live Physical Telemetry Stream** | 10 Hz continuous `ghost.v1` JSON Lines over physical USB UART | pySerial Parser Ingestion | 2026-10-31 10:30 | **Physically Tested** | $A_z \approx 9.78-9.84\text{ m/s}^2$, $T \approx 31.2^\circ\text{C}$ |
+| **Hardware-Linked Dashboard** | Live dashboard state with `simulated: false` and physical gravity | UI Badge & Oscilloscope Evidence | 2026-10-31 10:45 | **Physically Tested** | [`09-physical-hardware-telemetry.png`](docs/assets/proof-of-work/09-physical-hardware-telemetry.png) |
 | **Ghost Trace Anomaly Capture** | 200-frame FIFO lock upon physical disturbance | Circular Ring Buffer Dump | 2026-10-31 | **Software Tested** (Simulator verified) | `tests/test_anomaly_detector.py` |
 | **Event-Driven Ghost Awakening** | Skull scale surge, holographic glitch, HUD badge reaction | WebGL State Machine Evidence | 2026-10-31 | **Software Tested** | `ghost_gate_3d.js` |
 | **Forensic AI Interrogation** | Evidence-grounded post-mortem synthesis with numerical citations | Air-gapped Diagnostic Report | 2026-10-31 | **Software Tested** | `tests/test_ai_interrogator.py` |
@@ -310,11 +310,15 @@ As part of the physical bring-up for Hacktoberfest Week 4 ("Ghost in the Machine
 ![Stage 3: Command Center](docs/assets/proof-of-work/03-command-center.png)
 *Captured 2026-10-31 09:46 UTC. Dual multi-trace HTML5 canvas oscilloscopes streaming real-time telemetry, live anomaly injection panel, and forensic mode selectors.*
 
+#### Stage 4: Physical Hardware Telemetry (ESP32-WROOM-32 + MPU6050 on COM9)
+![Physical Hardware Telemetry](docs/assets/proof-of-work/09-physical-hardware-telemetry.png)
+*Captured 2026-10-31 10:45 UTC. Live streaming from physical ESP32 and MPU6050 hardware on COM9 into GHOST.OS Command Center (`simulated: false`, `device_id: ESP32-GHOST-HW01`, $A_z \approx 9.8\text{ m/s}^2$).*
+
 ---
 
 ## 13. Known Limitations & Verification Boundaries
 
-* **Physical Hardware**: ESP32 board is detected on `COM9` (Silicon Labs CP2102). Firmware build is currently downloading and compiling via PlatformIO for direct bench upload and hardware validation.
+* **Physical Hardware**: Fully brought up and physically verified on bench. ESP32-WROOM-32 DevKit and MPU6050 IMU communicating over Silicon Labs CP2102 on `COM9` at 115200 baud, streaming genuine 10 Hz `ghost.v1` JSON Lines with physical gravity ($A_z \approx 9.8\text{ m/s}^2$) and active GPIO4 heartbeat indicator.
 * **Ollama Live Inference**: Requires host installation of Ollama with `llama3.2:1b`. When Ollama is absent, the deterministic forensic rule engine operates autonomously as the verified offline fallback.
 * **Storage Retention**: By default, in-memory telemetry buffers maintain the most recent 500 frames. Sessions recorded via Digital Afterlife are written permanently to disk as `.jsonl` files in `data/sessions/`.
 
