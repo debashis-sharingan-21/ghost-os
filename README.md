@@ -275,15 +275,52 @@ tests/test_storage.py (1 test) .................. PASSED [100%]
 
 ---
 
-## 12. Known Limitations & Verification Boundaries
+## 12. Development Log — From Simulator to Physical Machine
 
-* **Physical Hardware**: 0 physical COM ports were attached during automated testing. Firmware code, register mappings, and documentation are complete and verified syntactically. Physical flashing and bench tests are pending the user's manual validation.
+As part of the physical bring-up for Hacktoberfest Week 4 ("Ghost in the Machine"), GHOST.OS maintains an empirical, chronological audit trail distinguishing between deterministic simulator benchmarks, software browser testing, and empirical hardware testing on the physical ESP32 and MPU6050.
+
+### Chronological Verification Matrix
+
+| Milestone | Target / Scope | Evidence Type | Timestamp (UTC) | Verification Status | Artifact Reference |
+|---|---|---|---|---|---|
+| **Ghost Gate Holographic UI** | Cinematic 3D procedural WebGL skull, scanlines, and audio trigger | Browser Viewport Screenshot (1902×928) | 2026-10-31 09:46 | **Software Tested** | [`01-ghost-gate.png`](docs/assets/proof-of-work/01-ghost-gate.png) |
+| **Hardware Awakening Sequence** | 3D wireframe ESP32 + MPU6050, animated I²C traces, Silicon audit log | Browser Viewport Screenshot (1902×928) | 2026-10-31 09:46 | **Software Tested** | [`02-hardware-awakening.png`](docs/assets/proof-of-work/02-hardware-awakening.png) |
+| **Command Center Live Terminal** | Real-time dual multi-trace oscilloscopes, telemetry badges, anomaly matrix | Browser Viewport Screenshot (1902×928) | 2026-10-31 09:46 | **Software Tested** | [`03-command-center.png`](docs/assets/proof-of-work/03-command-center.png) |
+| **PlatformIO Core Toolchain & Build** | Xtensa GCC 8.4.0, Arduino core for ESP32, FreeRTOS telemetry task | Compiler Build Log & Binary Check | 2026-10-31 09:14+ | **In Progress** | `task-1494` (~120 MB / 246 MB downloaded) |
+| **ESP32 Firmware Flash** | Serial upload to COM9 (Silicon Labs CP2102 @ 460800 baud) | esptool.py flash output | Pending Build | **Not Yet Verified** | Authorized on COM9 |
+| **MPU6050 Hardware Init & WHO_AM_I** | Hardware register read `0x75` (`0x68`), 400kHz Fast-Mode I²C | Serial Boot Stream (115200 baud) | Pending Flash | **Not Yet Verified** | Pending Flash |
+| **Live Physical Telemetry Stream** | 10 Hz continuous `ghost.v1` JSON Lines over physical USB UART | pySerial Parser Ingestion | Pending Flash | **Not Yet Verified** | Pending Flash |
+| **Hardware-Linked Dashboard** | Live dashboard state with `simulated: false` and physical gravity | UI Badge & Oscilloscope Evidence | Pending Flash | **Not Yet Verified** | Pending Flash |
+| **Ghost Trace Anomaly Capture** | 200-frame FIFO lock upon physical disturbance | Circular Ring Buffer Dump | 2026-10-31 | **Software Tested** (Simulator verified) | `tests/test_anomaly_detector.py` |
+| **Event-Driven Ghost Awakening** | Skull scale surge, holographic glitch, HUD badge reaction | WebGL State Machine Evidence | 2026-10-31 | **Software Tested** | `ghost_gate_3d.js` |
+| **Forensic AI Interrogation** | Evidence-grounded post-mortem synthesis with numerical citations | Air-gapped Diagnostic Report | 2026-10-31 | **Software Tested** | `tests/test_ai_interrogator.py` |
+| **Digital Afterlife Replay** | Variable-speed `.jsonl` session playback through oscilloscope engine | Replay Engine Log | 2026-10-31 | **Software Tested** | `tests/test_storage.py` |
+
+### Visual Proof-of-Work: Terminal Stages
+
+#### Stage 1: Ghost Gate (Holographic Procedural 3D Skull)
+![Stage 1: Ghost Gate](docs/assets/proof-of-work/01-ghost-gate.png)
+*Captured 2026-10-31 09:46 UTC from running GHOST.OS daemon on port 8000. Procedural WebGL skull with breathing eye-socket point lights and CRT scanline overlay.*
+
+#### Stage 2: Hardware Awakening (3D Embedded Silicon Wireframe)
+![Stage 2: Hardware Awakening](docs/assets/proof-of-work/02-hardware-awakening.png)
+*Captured 2026-10-31 09:46 UTC. Full 3D model of ESP32-WROOM-32 and GY-521 MPU6050 breakout with animated dual-trace I²C signal pulses (SDA GPIO 21 / SCL GPIO 22).*
+
+#### Stage 3: Command Center (SCADA Dashboard & Oscilloscopes)
+![Stage 3: Command Center](docs/assets/proof-of-work/03-command-center.png)
+*Captured 2026-10-31 09:46 UTC. Dual multi-trace HTML5 canvas oscilloscopes streaming real-time telemetry, live anomaly injection panel, and forensic mode selectors.*
+
+---
+
+## 13. Known Limitations & Verification Boundaries
+
+* **Physical Hardware**: ESP32 board is detected on `COM9` (Silicon Labs CP2102). Firmware build is currently downloading and compiling via PlatformIO for direct bench upload and hardware validation.
 * **Ollama Live Inference**: Requires host installation of Ollama with `llama3.2:1b`. When Ollama is absent, the deterministic forensic rule engine operates autonomously as the verified offline fallback.
 * **Storage Retention**: By default, in-memory telemetry buffers maintain the most recent 500 frames. Sessions recorded via Digital Afterlife are written permanently to disk as `.jsonl` files in `data/sessions/`.
 
 ---
 
-## 13. Credits, Attribution & License
+## 14. Credits, Attribution & License
 
 * **Core Architecture & Software**: Architected and developed by **Debashis Mohapatra** ([`debashis-sharingan-21`](https://github.com/debashis-sharingan-21)).
 * **Aesthetic Reference**: Retro-industrial SCADA aesthetic inspired by VECTRON-32 (Copyright &copy; 2026 debashis-sharingan-21, MIT License).
